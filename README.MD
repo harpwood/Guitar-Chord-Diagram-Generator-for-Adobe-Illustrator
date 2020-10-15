@@ -12,7 +12,7 @@ This script will generate guitar chord diagrams for you on Adobe Illustrator. It
 function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNameUserInput, stringPositionUserInput, fingerUsedUserInput, strGridLinesThickness, fretGridLinesThickness)
 /**
 
- *** @param {***} xx*            *x position of the diagram*
+ *** @param {***} xx            x position of the diagram
 
  *** @param {***} yy            y position of the diagram
 
@@ -26,13 +26,13 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
 
  *** @param {***} chordNameUserInput    name of chord
 
- *** @param {***} fingerUsedUserInput    fingering as array eg ["-", "-", "1", "2", "3", "-"] for the chord A*
+ *** @param {***} fingerUsedUserInput    fingering as array eg ["-", "-", "1", "2", "3", "-"] for the chord A
 
- *** @param {***} stringPositionUserInput  open ("o"), close ("x") strings and number of fret for each finger as array eg ["x", "o", "2", "2", "2", "o"]*
+ *** @param {***} stringPositionUserInput  open ("o"), close ("x") strings and number of fret for each finger as array eg ["x", "o", "2", "2", "2", "o"]
 
- *** @param {***} [strGridLinesThickness]  (optional) The thickness of the strings. If no value passes then it is autocalculated*
+ *** @param {***} [strGridLinesThickness]  (optional) The thickness of the strings. If no value passes then it is autocalculated
 
- *** @param {***} [fretGridLinesThickness] (optional) The thickness of the frets. If no value passes then it is autocalculated*
+ *** @param {***} [fretGridLinesThickness] (optional) The thickness of the frets. If no value passes then it is autocalculated
 
  */
 ```
