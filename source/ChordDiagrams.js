@@ -1,215 +1,216 @@
-if ( app.documents.length < 1 ) {doc = app.documents.add();}
-else {doc = app.activeDocument;}
-
 init(); 
+createUI();
 
-var myWindow = new Window("dialog", "Chord Diagram Creator");       // UI base dialog box
-
-// Chord name input group --------
-var chordNameInput = myWindow.add('group {orientation: "row"}');    // container 
-chordNameInput.alignment = "left"
-chordNameInput.add("statictext", undefined, "Chord Name:");         // text obj
-
-var chordName = chordNameInput.add("edittext", undefined, "");      // input obj
-chordName.characters = 6;
-chordName.active = true;
-
-// dropdown menus group ---------
-var strFretsGroup = myWindow.add('group {orientation: "row"}');                             // container
-strFretsGroup.alignment = "left"
-// Number of Strings dropdown menu
-var numberOfStrings = strFretsGroup.add("statictext", undefined, "Number of Strings:");     // text obj
-var numberOfStringsDropDown = strFretsGroup.add("dropdownlist", undefined, 
-    ["4 Strings", "5 Strings", "6 Strings", "7 Strings", "8 Strings", "9 Strings"]);        // dropdown menu obj
-numberOfStringsDropDown.selection = numberOfStringsDropDown.items[2];                       // default selected item
-
-// Number of Frets dropdown menu
-var numberOfFrets = strFretsGroup.add("statictext", undefined, "Number of Frets:");         // text obj
-var numberOfFretsDropDown = strFretsGroup.add("dropdownlist", undefined, 
-    ["4 Frets", "5 Frets", "6 Frets", "7 Frets", "8 Frets", "9 Frets"]);                    // dropdown menu obj
-numberOfFretsDropDown.selection = numberOfFretsDropDown.items[1];                           // default selected item
-
-// finger position input group ---------
-var fingerPositions = myWindow.add('group {orientation: "row"}');       // container
-fingerPositions.alignment = "left"
-
-fingerPositions.add("statictext", undefined, "Fingers Used:");          // text obj
-
-var fingerPosStr = [];  // input obj array
-for (i = 0; i < 9; i++)
+function createUI()
 {
-    fingerPosStr.push(fingerPositions.add("edittext", undefined, ""));  // input obj
-    fingerPosStr[i].characters = 2;
+    var myWindow = new Window("dialog", "Chord Diagram Creator");       // UI base dialog box
 
-    //visibility based on available strings 
-    if (i > 5) fingerPosStr[i].visible = false;
-}
+    // Chord name input group --------
+    var chordNameInput = myWindow.add('group {orientation: "row"}');    // container 
+    chordNameInput.alignment = "left"
+    chordNameInput.add("statictext", undefined, "Chord Name:");         // text obj
 
-// fret Position input group ---------
-var fretPositions = myWindow.add('group {orientation: "row"}');     // container
-fretPositions.alignment = "left"
+    var chordName = chordNameInput.add("edittext", undefined, "");      // input obj
+    chordName.characters = 6;
+    chordName.active = true;
 
-fretPositions.add("statictext", undefined, "Fret Positions:");      // text obj
+    // dropdown menus group ---------
+    var strFretsGroup = myWindow.add('group {orientation: "row"}');                             // container
+    strFretsGroup.alignment = "left"
+    // Number of Strings dropdown menu
+    var numberOfStrings = strFretsGroup.add("statictext", undefined, "Number of Strings:");     // text obj
+    var numberOfStringsDropDown = strFretsGroup.add("dropdownlist", undefined, 
+        ["4 Strings", "5 Strings", "6 Strings", "7 Strings", "8 Strings", "9 Strings"]);        // dropdown menu obj
+    numberOfStringsDropDown.selection = numberOfStringsDropDown.items[2];                       // default selected item
 
-var fretPosStr = [];    // input obj array
-for (i = 0; i < 9; i++)
-{
-    fretPosStr.push(fretPositions.add("edittext", undefined, ""));      // input obj
-    fretPosStr[i].characters = 2;
+    // Number of Frets dropdown menu
+    var numberOfFrets = strFretsGroup.add("statictext", undefined, "Number of Frets:");         // text obj
+    var numberOfFretsDropDown = strFretsGroup.add("dropdownlist", undefined, 
+        ["4 Frets", "5 Frets", "6 Frets", "7 Frets", "8 Frets", "9 Frets"]);                    // dropdown menu obj
+    numberOfFretsDropDown.selection = numberOfFretsDropDown.items[1];                           // default selected item
 
-    //visibility based on available strings
-    if (i > 5) fretPosStr[i].visible = false;
-}
+    // finger position input group ---------
+    var fingerPositions = myWindow.add('group {orientation: "row"}');       // container
+    fingerPositions.alignment = "left"
 
-// X,Y Position input group ---------
-var xyPosition = myWindow.add('group {orientation: "row"}');        // container
-xyPosition.alignment = "left"
+    fingerPositions.add("statictext", undefined, "Fingers Used:");          // text obj
 
-xyPosition.add("statictext", undefined, "Position X:");             // text obj
-var xPosistion = xyPosition.add("edittext", undefined, "0");        // input obj
-xPosistion.characters = 4;
-
-xyPosition.add("statictext", undefined, "Position Y:");             // text obj
-var yPosistion = xyPosition.add("edittext", undefined, "0");        // input obj
-yPosistion.characters = 4;
-
-// Width, Height Diagram Size input group ---------
-var diagramSize = myWindow.add('group {orientation: "row"}');       // container
-diagramSize.alignment = "left"
-
-diagramSize.add("statictext", undefined, "Diagram Width:");         // text obj
-var diagramWidth = diagramSize.add("edittext", undefined, "100");   // input obj
-diagramWidth.characters = 4;
-
-diagramSize.add("statictext", undefined, "Diagram Height:");        // text obj
-var diagramHeight = diagramSize.add("edittext", undefined, "100");  // input obj
-diagramHeight.characters = 4;
-
-// String and Fret Thickness input group ---------
-var stringAndFretThickness = myWindow.add('group {orientation: "row"}');            // container
-stringAndFretThickness.alignment = "left"
-
-// String Thickness
-stringAndFretThickness.add("statictext", undefined, "String Thickness:");           // text obj
-var stringThickness = stringAndFretThickness.add("edittext", undefined, "auto");    // input obj
-stringThickness.characters = 4;
-
-// Fret Thickness
-stringAndFretThickness.add("statictext", undefined, "Fret Thickness:");             // text obj
-var fretThickness = stringAndFretThickness.add("edittext", undefined, "auto");      // input obj
-fretThickness.characters = 4;
-
-//Dynamic UI Changes -------
-numberOfStringsDropDown.onChange = function () {
-
-    for (i = 4; i < 10; i++)
+    var fingerPosStr = [];  // input obj array
+    for (i = 0; i < 9; i++)
     {
-        if (numberOfStringsDropDown.selection == numberOfStringsDropDown.items[i-4]) 
+        fingerPosStr.push(fingerPositions.add("edittext", undefined, ""));  // input obj
+        fingerPosStr[i].characters = 2;
+
+        //visibility based on available strings 
+        if (i > 5) fingerPosStr[i].visible = false;
+    }
+
+    // fret Position input group ---------
+    var fretPositions = myWindow.add('group {orientation: "row"}');     // container
+    fretPositions.alignment = "left"
+
+    fretPositions.add("statictext", undefined, "Fret Positions:");      // text obj
+
+    var fretPosStr = [];    // input obj array
+    for (i = 0; i < 9; i++)
+    {
+        fretPosStr.push(fretPositions.add("edittext", undefined, ""));      // input obj
+        fretPosStr[i].characters = 2;
+
+        //visibility based on available strings
+        if (i > 5) fretPosStr[i].visible = false;
+    }
+
+    // X,Y Position input group ---------
+    var xyPosition = myWindow.add('group {orientation: "row"}');        // container
+    xyPosition.alignment = "left"
+
+    xyPosition.add("statictext", undefined, "Position X:");             // text obj
+    var xPosistion = xyPosition.add("edittext", undefined, "0");        // input obj
+    xPosistion.characters = 4;
+
+    xyPosition.add("statictext", undefined, "Position Y:");             // text obj
+    var yPosistion = xyPosition.add("edittext", undefined, "0");        // input obj
+    yPosistion.characters = 4;
+
+    // Width, Height Diagram Size input group ---------
+    var diagramSize = myWindow.add('group {orientation: "row"}');       // container
+    diagramSize.alignment = "left"
+
+    diagramSize.add("statictext", undefined, "Diagram Width:");         // text obj
+    var diagramWidth = diagramSize.add("edittext", undefined, "100");   // input obj
+    diagramWidth.characters = 4;
+
+    diagramSize.add("statictext", undefined, "Diagram Height:");        // text obj
+    var diagramHeight = diagramSize.add("edittext", undefined, "100");  // input obj
+    diagramHeight.characters = 4;
+
+    // String and Fret Thickness input group ---------
+    var stringAndFretThickness = myWindow.add('group {orientation: "row"}');            // container
+    stringAndFretThickness.alignment = "left"
+
+    // String Thickness
+    stringAndFretThickness.add("statictext", undefined, "String Thickness:");           // text obj
+    var stringThickness = stringAndFretThickness.add("edittext", undefined, "auto");    // input obj
+    stringThickness.characters = 4;
+
+    // Fret Thickness
+    stringAndFretThickness.add("statictext", undefined, "Fret Thickness:");             // text obj
+    var fretThickness = stringAndFretThickness.add("edittext", undefined, "auto");      // input obj
+    fretThickness.characters = 4;
+
+    //Dynamic UI Changes -------
+    numberOfStringsDropDown.onChange = function () {
+
+        for (i = 4; i < 10; i++)
         {
-            //change input visibility based on selected dropmenu option
-            for (var j = 0; j < 9; j++)
-            if (j < i) 
+            if (numberOfStringsDropDown.selection == numberOfStringsDropDown.items[i-4]) 
             {
-                fingerPosStr[j].visible = true;
-                fretPosStr[j].visible = true;
-            }
-            else
-            {
-                fingerPosStr[j].visible = false;  
-                fretPosStr[j].visible = false;
-            }
-           
-            //change the diagram height accordingly
-            var currentString = (numberOfStringsDropDown.selection).text;   // number of strings as text
-            var currentFret = (numberOfFretsDropDown.selection).text;       // number of frets as text
-            var w = parseInt(diagramWidth.text);                            // the diagram width cast to Int (TODO: cast to float)
-            //get the first char of the text (contains number of strings and frets)
-            var s = parseInt(currentString.charAt(0));                      // number of strings as Int
-            var f = parseInt(currentFret.charAt(0)) + 1;                    // number of frets as Int plus the nut
-            //determine the new diagram height with rule of three
-            var changedHeight =  f * w / s;
-            diagramHeight.text = String(changedHeight);
+                //change input visibility based on selected dropmenu option
+                for (var j = 0; j < 9; j++)
+                if (j < i) 
+                {
+                    fingerPosStr[j].visible = true;
+                    fretPosStr[j].visible = true;
+                }
+                else
+                {
+                    fingerPosStr[j].visible = false;  
+                    fretPosStr[j].visible = false;
+                }
+            
+                //change the diagram height accordingly
+                var currentString = (numberOfStringsDropDown.selection).text;   // number of strings as text
+                var currentFret = (numberOfFretsDropDown.selection).text;       // number of frets as text
+                var w = parseInt(diagramWidth.text);                            // the diagram width cast to Int (TODO: cast to float)
+                //get the first char of the text (contains number of strings and frets)
+                var s = parseInt(currentString.charAt(0));                      // number of strings as Int
+                var f = parseInt(currentFret.charAt(0)) + 1;                    // number of frets as Int plus the nut
+                //determine the new diagram height with rule of three
+                var changedHeight =  f * w / s;
+                diagramHeight.text = String(changedHeight);
 
-            myWindow.update();
-        } 
+                myWindow.update();
+            } 
+        }
     }
-}
- 
-numberOfFretsDropDown.onChange = function () {
+    
+    numberOfFretsDropDown.onChange = function () {
 
-    for (i = 5; i < 11; i++)
-    {
-        if (numberOfFretsDropDown.selection == numberOfFretsDropDown.items[i-5]) 
+        for (i = 5; i < 11; i++)
         {
-            //change the diagram height accordingly 
-            var currentString = (numberOfStringsDropDown.selection).text;       // number of strings as text
-            var w = parseInt(diagramWidth.text);                                // the diagram width cast to Int (TODO: cast to float)
-            //get the first char of the text (contains number of strings). The number of frets is the (i)
-            var s = parseInt(currentString.charAt(0));                          // number of strings as Int
-            //determine the new diagram height with rule of three
-            var changedHeight =  i * w / s;
-            diagramHeight.text = String(changedHeight);
+            if (numberOfFretsDropDown.selection == numberOfFretsDropDown.items[i-5]) 
+            {
+                //change the diagram height accordingly 
+                var currentString = (numberOfStringsDropDown.selection).text;       // number of strings as text
+                var w = parseInt(diagramWidth.text);                                // the diagram width cast to Int (TODO: cast to float)
+                //get the first char of the text (contains number of strings). The number of frets is the (i)
+                var s = parseInt(currentString.charAt(0));                          // number of strings as Int
+                //determine the new diagram height with rule of three
+                var changedHeight =  i * w / s;
+                diagramHeight.text = String(changedHeight);
 
-            myWindow.update();
-        } 
-    }
-}
-
-//Buttons ------
-var myButtonGroup = myWindow.add("group");                                          // container
-myButtonGroup.alignment = "right";
-
-myWindow.createBtn = myButtonGroup.add("button", undefined, "Create Chord");        // button obj
-myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");                // button obj
-
-myWindow.layout.layout(true);   //TODO check if this line of code is needed
-
-//Buttons events
-myWindow.createBtn.onClick = function () {
-    
-    // Get user input and eveluate it to arguments for the function createChordDiagram (TODO: more evaluation is needed)
-    var xPosArg = parseFloat(xPosistion.text.replace(",", ".")); 
-    var yPosArg = parseFloat(yPosistion.text.replace(",", "."));
-    var dWArg = parseFloat(diagramWidth.text.replace(",", "."));
-    var dHArg = parseFloat(diagramHeight.text.replace(",", "."));
-    
-    var numberOfStringsArg = parseFloat(numberOfStringsDropDown.selection.text.replace(",", ".").charAt(0));
-    var numberOfFretsArg = parseFloat(numberOfFretsDropDown.selection.text.replace(",", ".").charAt(0));
-    var nameOfChord = chordName.text; 
-    
-    var fretPosArg = [];
-    for (var i = 0; i < fretPosStr.length; i++)
-    {
-        if (fretPosStr[i].text == "") fretPosArg.push("x");
-        else fretPosArg.push(fretPosStr[i].text);
+                myWindow.update();
+            } 
+        }
     }
 
-    var fingerPosArg = [];
-    for (var i = 0; i < fingerPosStr.length; i++)
-    {
-        fingerPosArg.push(fingerPosStr[i].text);
+    //Buttons ------
+    var myButtonGroup = myWindow.add("group");                                          // container
+    myButtonGroup.alignment = "right";
+
+    myWindow.createBtn = myButtonGroup.add("button", undefined, "Create Chord");        // button obj
+    myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");                // button obj
+
+    myWindow.layout.layout(true);   //TODO check if this line of code is needed
+
+    //Buttons events
+    myWindow.createBtn.onClick = function () {
+        
+        // Get user input and eveluate it to arguments for the function createChordDiagram (TODO: more evaluation is needed)
+        var xPosArg = parseFloat(xPosistion.text.replace(",", ".")); 
+        var yPosArg = parseFloat(yPosistion.text.replace(",", "."));
+        var dWArg = parseFloat(diagramWidth.text.replace(",", "."));
+        var dHArg = parseFloat(diagramHeight.text.replace(",", "."));
+        
+        var numberOfStringsArg = parseFloat(numberOfStringsDropDown.selection.text.replace(",", ".").charAt(0));
+        var numberOfFretsArg = parseFloat(numberOfFretsDropDown.selection.text.replace(",", ".").charAt(0));
+        var nameOfChord = chordName.text; 
+        
+        var fretPosArg = [];
+        for (var i = 0; i < fretPosStr.length; i++)
+        {
+            if (fretPosStr[i].text == "") fretPosArg.push("x");
+            else fretPosArg.push(fretPosStr[i].text);
+        }
+
+        var fingerPosArg = [];
+        for (var i = 0; i < fingerPosStr.length; i++)
+        {
+            fingerPosArg.push(fingerPosStr[i].text);
+        }
+        
+        //  TODO pass [thickStrings] and [thickFrets] as undefined if they do not contain numbers 
+        //var thickStrings = stringThickness.text;
+        //var thickFrets = fretThickness.text;
+
+        if (nameOfChord == "") nameOfChord = " ";   // if a completely empty string is passed, the text object will vanish uppon creation
+
+        //Pass the arguments and call the function to create the diagram
+        createChordDiagram(xPosArg, yPosArg, dWArg, dHArg, numberOfStringsArg, numberOfFretsArg, nameOfChord, fretPosArg, fingerPosArg);
+
+        myWindow.close();
+
     }
-    
-    //  TODO pass [thickStrings] and [thickFrets] as undefined if they do not contain numbers 
-    //var thickStrings = stringThickness.text;
-    //var thickFrets = fretThickness.text;
+    myWindow.closeBtn.onClick = function () {
 
-    if (nameOfChord == "") nameOfChord = " ";   // if a completely empty string is passed, the text object will vanish uppon creation
 
-    //Pass the arguments and call the function to create the diagram
-    createChordDiagram(xPosArg, yPosArg, dWArg, dHArg, numberOfStringsArg, numberOfFretsArg, nameOfChord, fretPosArg, fingerPosArg);
+        myWindow.close();
 
-    myWindow.close();
+    }
 
+    myWindow.show();
 }
-myWindow.closeBtn.onClick = function () {
-
-
-    myWindow.close();
-
-}
-
-myWindow.show();
 
 
 /**
@@ -228,51 +229,44 @@ myWindow.show();
  */
 function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNameUserInput, stringPositionUserInput, fingerUsedUserInput, strGridLinesThickness, fretGridLinesThickness)
 {
-    // Creates a new document if none exists
-
-
-    //create frets
+    // create the frets -----
     var fretX = xx;      
     var fretY = yy; 
     var fretGap = height / numFrets; // the gap between frets
-    //if no fretGridLinesThickness input then autosize
+
+    // if no fretGridLinesThickness input then autosize
     if(fretGridLinesThickness == undefined) fretGridLinesThickness = width / 300;
     
-    var frets = [];
-    for (var i = 0 ; i < numFrets + 1 ; i++)
+    var frets = []; // array of shape paths
+    for (var i = 0 ; i < numFrets + 1 ; i++)    // we add +1 because of the "nut" 
     {
-        
-        var shapePath = app.activeDocument.activeLayer.pathItems.add();
-
+        var shapePath = app.activeDocument.activeLayer.pathItems.add();     // shape obj
         shapePath.strokeColor = makeColor(0,0,0);
-        shapePath.fillColor = makeColor(0,0,0);
         shapePath.strokeCap = StrokeCap.BUTTENDCAP;
         shapePath.strokeJoin = StrokeJoin.ROUNDENDJOIN;
         shapePath.strokeWidth = fretGridLinesThickness;
         shapePath.filled = false;
         shapePath.stroked = true;
-        
-        shapePath.setEntirePath([[fretX, fretY], [fretX + width, fretY]]);
-
-        fretY = fretY - fretGap;
-
+        shapePath.setEntirePath([[fretX, fretY], [fretX + width, fretY]]);  // draw fret
         shapePath.closed = true;
 
-        frets.push(shapePath);
-    }
+        fretY = fretY - fretGap;    // change the value for the next fret
 
+        frets.push(shapePath);      // add fret to array for grouping later
+    }
     
-    //create strings
+    // create strings -----
     var strX = xx;
     var srtY = yy;
     var srtGap = width / (numStrings - 1); // the gap between strings
-    //if no strGridLinesThickness input then autosize
+
+    // if no strGridLinesThickness input then autosize
     if(strGridLinesThickness == undefined) strGridLinesThickness = width / 100;
-    var strings = [];
+
+    var strings = [];   // array of shape paths
     for (var ii = 0 ; ii < numStrings; ii++)
     {
-        var shapePath = app.activeDocument.activeLayer.pathItems.add();
-   
+        var shapePath = app.activeDocument.activeLayer.pathItems.add();     // shape obj
         shapePath.stroked = true;
         shapePath.strokeColor = makeColor(0,0,0);
         shapePath.fillColor = makeColor(0,0,0);
@@ -280,81 +274,81 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
         shapePath.strokeCap = StrokeCap.BUTTENDCAP;
         shapePath.strokeJoin = StrokeJoin.MITERENDJOIN;
         shapePath.strokeWidth = strGridLinesThickness;
-    
-        shapePath.setEntirePath([[strX, srtY], [strX, srtY - height]]);
-
-        strX = strX + srtGap;
-        
+        shapePath.setEntirePath([[strX, srtY], [strX, srtY - height]]);     // draw string
         shapePath.closed = true;
 
-        strings.push(shapePath);
+        strX = strX + srtGap;      // change the value for the next string
+
+        strings.push(shapePath);    // add string to array for grouping later
     }
 
  
-    //Placing the name of the chord
-    var fsize = width / 5;
-    var pathRef = doc.pathItems.rectangle(yy + fsize * 1.2, xx, width ,fsize);
-    var textRef = doc.textFrames.areaText(pathRef);
-    var textPar = textRef.paragraphs.add(chordNameUserInput);
+    //Placing the name of the chord -----
+    var fsize = width / 5; // TODO Figure out a better way to set font size 
+    var pathRef = doc.pathItems.rectangle(yy + fsize * 1.2, xx, width ,fsize);  // rectangle obj
+    var textRef = doc.textFrames.areaText(pathRef);                             // define rectangle as text area
+    var textPar = textRef.paragraphs.add(chordNameUserInput);                   // apply the chord name from user input
 
-    textRef.textRange.characterAttributes.size = fsize;
-    textPar.textFont = app.textFonts.getByName("Calibri");
+    textRef.textRange.characterAttributes.size = fsize;                         // font size
+    textPar.textFont = app.textFonts.getByName("Calibri");                      // apply font TODO: determine font
     var paraAttr = textPar.paragraphAttributes;
     paraAttr.justification = Justification.CENTER;
-    
 
-    //Placing the fingering, fingers wise
-    var fingerUsedTextRef=[];
-    var fingerUsedFontStyle=[];   
-    var frtGap = height / (numFrets);
+    //Placing the fingering, fingers wise -----
+    var fingerUsedTextRef=[];           // array of text oj
+    var fingerUsedFontStyle=[];         // array of font attributes
+    var frtGap = height / (numFrets);   // the gap between frets
+
+    // positioning the fingering on diagram
     for (var f = 0; f < numStrings; f++ )
     {
-        if (fingerUsedUserInput[f] == "-") fingerUsedUserInput[f] = "";
-        fingerUsedTextRef[f] = doc.textFrames.pointText([xx + (srtGap * f) - (srtGap / 8), yy - height - frtGap / 2]);
-        fingerUsedTextRef[f].contents = fingerUsedUserInput[f];
-        fingerUsedFontStyle[f] = fingerUsedTextRef[f].textRange.characterAttributes;
-        fingerUsedFontStyle[f].textFont = app.textFonts.getByName("Calibri");
-        fingerUsedFontStyle[f].size = frtGap / 2;
+        //TODO evaluate input
+        if (fingerUsedUserInput[f] == "-") fingerUsedUserInput[f] = "";                 // if string is empty (""), will vanish
+        fingerUsedTextRef[f] = doc.textFrames.pointText(
+                [xx + (srtGap * f) - (srtGap / 8), yy - height - frtGap / 2]);          // pointText obj
+        fingerUsedTextRef[f].contents = fingerUsedUserInput[f];                         // apply user input text in contents
+        fingerUsedFontStyle[f] = fingerUsedTextRef[f].textRange.characterAttributes;    
+        fingerUsedFontStyle[f].textFont = app.textFonts.getByName("Calibri"); //TODO determine font
+        fingerUsedFontStyle[f].size = frtGap / 2;   // TODO Figure out a better way to set font size
     }
 
     fingersCopy = []; //helper array to figure the neck position
-
-    //lowercase only, change zero to 'o'
     for (var s = 0; s < numStrings; s++ )
     {
+        //lowercase only, change zero to 'o'
         if (stringPositionUserInput[s] == "X") stringPositionUserInput[s] = "x";
-        
         if (stringPositionUserInput[s] == "O" || stringPositionUserInput[s] == "0") stringPositionUserInput[s] = "o";
-
 
         if(parseInt(stringPositionUserInput[s]))
         {
             var val = stringPositionUserInput[s];
             fingersCopy.push(val);
         }
-
     }
 
     //sort fingered frets from low to high
     fingersCopy.sort(function(a, b) {return a - b;}); 
     
+    // the gap from nut to start of diagram
     var neckGap = 0; 
-    if(Number(fingersCopy[0]) > numFrets + 1) //if the lowest fretted fret is less than the total strings
+    // if the lowest fretted fret is bigger than the total frets in diagram
+    if(Number(fingersCopy[0]) > numFrets + 1) 
     {
-        neckGap = Number(fingersCopy[0]) - 1; //determing the fret number of the diagram
+        //determing the fret number of the diagram
+        neckGap = Number(fingersCopy[0]) - 1; 
 
-        neckGapTextRef = doc.textFrames.pointText([xx - srtGap / 2, yy - srtGap * .75]);
-        neckGapTextRef.contents = (neckGap + 1).toString();
+        neckGapTextRef = doc.textFrames.pointText([xx - srtGap / 2, yy - srtGap * .75]);        // pointText obj
+        neckGapTextRef.contents = (neckGap + 1).toString();                                     // apply the neckGap as text in contents
         neckGapFontStyle = neckGapTextRef.textRange.characterAttributes;
-        neckGapFontStyle.textFont = app.textFonts.getByName("Calibri");
-        neckGapFontStyle.size = srtGap * .75;
+        neckGapFontStyle.textFont = app.textFonts.getByName("Calibri"); //TODO determine font
+        neckGapFontStyle.size = srtGap * .75;   // TODO Figure out a better way to set font size
     }
-    else
+    else    // if the lowest fretted fret is not bigger than the total frets in diagram....
     {
-         
-
-        if(Number(fingersCopy[fingersCopy.length - 1]) > numFrets) // && Number(fingersCopy[fingersCopy.length - 1]) - Number(fingersCopy[0]) <= numStrings)
+        // ...check if the highest fret is bigger than the total frets in diagram... 
+        if(Number(fingersCopy[fingersCopy.length - 1]) > numFrets) 
         {
+            // ...so the neckGap will reach the lowest fingered fret.
             neckGap = Number(fingersCopy[0]) - 1;
 
             neckGapTextRef = doc.textFrames.pointText([xx - srtGap / 2, yy - srtGap * .75]);
@@ -362,33 +356,38 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             neckGapFontStyle = neckGapTextRef.textRange.characterAttributes;
             neckGapFontStyle.textFont = app.textFonts.getByName("Calibri");
             neckGapFontStyle.size = srtGap * .75;
-        }
-        else frets[0].strokeWidth *= 10; // fret 0 aka nut, so make it bold
+        }   
+        // else the fret 0 is the "nut", so make it bold
+        else frets[0].strokeWidth *= 10; 
     }
    
-    //Placing the fingering, frets wise
-    var stringNumberTextRef=[];
-    var stringNumberFontStyle=[];   
+    //Placing the fingering, frets wise -----
+    var stringNumberTextRef=[];     // array of text oj
+    var stringNumberFontStyle=[];   // array of font attributes 
 
+    // positioning the fingering on diagram
     for (var s = 0; s < numStrings; s++ )
     {   
+        // if is closed string
         if (stringPositionUserInput[s] == "x")
         {
-            stringNumberTextRef[s] = doc.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);
-            stringNumberTextRef[s].contents = stringPositionUserInput[s];
+            stringNumberTextRef[s] = doc.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);     // pointText obj
+            stringNumberTextRef[s].contents = stringPositionUserInput[s];                                               // apply user input text in contents
             stringNumberFontStyle[s] = stringNumberTextRef[s].textRange.characterAttributes;
-            stringNumberFontStyle[s].textFont = app.textFonts.getByName("Calibri");
-            stringNumberFontStyle[s].size = srtGap / 2;
+            stringNumberFontStyle[s].textFont = app.textFonts.getByName("Calibri"); //TODO determine font
+            stringNumberFontStyle[s].size = srtGap / 2; // TODO Figure out a better way to set font size
         } 
-        else  if (stringPositionUserInput[s] == "O" || stringPositionUserInput[s] == "o" || stringPositionUserInput[s] == "0")
+        // if is open string
+        else  if (stringPositionUserInput[s] == "o")
         {
             stringNumberTextRef[s] = doc.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);
             stringNumberTextRef[s].contents = stringPositionUserInput[s];
             stringNumberFontStyle[s] = stringNumberTextRef[s].textRange.characterAttributes;
             stringNumberFontStyle[s].textFont = app.textFonts.getByName("Calibri");
-            stringNumberFontStyle[s].size = srtGap / 2;
+            stringNumberFontStyle[s].size = srtGap / 2; // TODO Figure out a better way to set font size
         } 
-        else if (Number(stringPositionUserInput[s]) < numFrets + 1 + neckGap) //|| (Number(stringPositionUserInput[s]) < (numStrings + 2 - neckGap) && Number(fingersCopy[fingersCopy.length - 1]) > numStrings - 1) )
+        // if is fingering draw circle
+        else if (Number(stringPositionUserInput[s]) < numFrets + 1 + neckGap)
         {
             var finger = doc.pathItems;
             finger.strokeColor = makeColor(0,0,0);
@@ -396,6 +395,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             finger.filled = true;
             var radius;
 
+            // TODO draw slightly smaller circles
             if (srtGap < frtGap) radius = srtGap; else radius = frtGap;
             finger.ellipse(yy - frtGap * (Number(stringPositionUserInput[(s)]) - 1 - neckGap), xx + srtGap * s - srtGap / 2 * frtGap / srtGap, radius, radius);          
         }
@@ -409,7 +409,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     }
 }
 
-function makeColor(r,g,b) //TODO: change to CMYK
+function makeColor(r,g,b) // TODO: change to CMYK
 {
     var c = new RGBColor();
     c.red   = r;
@@ -420,30 +420,31 @@ function makeColor(r,g,b) //TODO: change to CMYK
 
 function init()
 {
-    
+    // Creates a new document if none exists
+    if ( app.documents.length < 1 ) {doc = app.documents.add();}
+    else {doc = app.activeDocument;}
 
-    //sets fill and stroke defaults to true
+    // sets fill and stroke defaults to true
     doc.defaultFilled = true;
     doc.defaultStroked = true;
 
-    //Inspecting if the active layer of the document is locked
-
+    // Inspecting if the active layer of the document is locked
     if (doc.activeLayer.locked) 
     {
         alert("The active layer is locked");
-        return;
+        return;     // TODO: unlock layer or create a new layer)
     } else doc = app.activeDocument.activeLayer;
 
     var newRGBColor = new RGBColor();
     var storeRGBColorF = new RGBColor();
     var storeRGBColorB = new RGBColor();
 
-    //TODO: save current colors and restore them at the end of the script
-    //Restore the colors
+    // TODO: save current colors and restore them at the end of the script
+    // Restore the colors
     storeRGBColorF = app.activeDocument.defaultFillColor ;
     storeRGBColorB = app.activeDocument.defaultStrokeColor;
 
-    //Turn colors black
+    // Turn colors black
     newRGBColor.red = 0;
     newRGBColor.green = 0;
     newRGBColor.blue = 0;
