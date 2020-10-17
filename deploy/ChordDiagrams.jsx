@@ -1,114 +1,112 @@
 if ( app.documents.length < 1 ) {doc = app.documents.add();}
 else {doc = app.activeDocument;}
-init();
 
-var myWindow = new Window("dialog", "Chord Diagram Creator");
+init(); 
 
-// Chord name input
-var chordNameInput = myWindow.add('group {orientation: "row"}');
+var myWindow = new Window("dialog", "Chord Diagram Creator");       // UI base dialog box
+
+// Chord name input group --------
+var chordNameInput = myWindow.add('group {orientation: "row"}');    // container 
 chordNameInput.alignment = "left"
+chordNameInput.add("statictext", undefined, "Chord Name:");         // text obj
 
-chordNameInput.add("statictext", undefined, "Chord Name:");
-var chordName = chordNameInput.add("edittext", undefined, "");
-
+var chordName = chordNameInput.add("edittext", undefined, "");      // input obj
 chordName.characters = 6;
 chordName.active = true;
 
-
-//Number of Strings dropdown menu 
-var strFretsGroup = myWindow.add('group {orientation: "row"}');
+// dropdown menus group ---------
+var strFretsGroup = myWindow.add('group {orientation: "row"}');                             // container
 strFretsGroup.alignment = "left"
+// Number of Strings dropdown menu
+var numberOfStrings = strFretsGroup.add("statictext", undefined, "Number of Strings:");     // text obj
+var numberOfStringsDropDown = strFretsGroup.add("dropdownlist", undefined, 
+    ["4 Strings", "5 Strings", "6 Strings", "7 Strings", "8 Strings", "9 Strings"]);        // dropdown menu obj
+numberOfStringsDropDown.selection = numberOfStringsDropDown.items[2];                       // default selected item
 
-var numberOfStrings = strFretsGroup.add("statictext", undefined, "Number of Strings:");
-var numberOfStringsDropDown = strFretsGroup.add("dropdownlist", undefined, ["4 Strings", "5 Strings", "6 Strings", "7 Strings", "8 Strings", "9 Strings"]);
-numberOfStringsDropDown.selection = numberOfStringsDropDown.items[2];
+// Number of Frets dropdown menu
+var numberOfFrets = strFretsGroup.add("statictext", undefined, "Number of Frets:");         // text obj
+var numberOfFretsDropDown = strFretsGroup.add("dropdownlist", undefined, 
+    ["4 Frets", "5 Frets", "6 Frets", "7 Frets", "8 Frets", "9 Frets"]);                    // dropdown menu obj
+numberOfFretsDropDown.selection = numberOfFretsDropDown.items[1];                           // default selected item
 
-//Number of Frets dropdown menu
-var numberOfFrets = strFretsGroup.add("statictext", undefined, "Number of Frets:");
-var numberOfFretsDropDown = strFretsGroup.add("dropdownlist", undefined, ["4 Frets", "5 Frets", "6 Frets", "7 Frets", "8 Frets", "9 Frets"]);
-numberOfFretsDropDown.selection = numberOfFretsDropDown.items[1];
-
-//finger position input
-var fingerPositions = myWindow.add('group {orientation: "row"}');
+// finger position input group ---------
+var fingerPositions = myWindow.add('group {orientation: "row"}');       // container
 fingerPositions.alignment = "left"
 
-fingerPositions.add("statictext", undefined, "Fingers Used:");
+fingerPositions.add("statictext", undefined, "Fingers Used:");          // text obj
 
-var fingerPosStr = [];
-
+var fingerPosStr = [];  // input obj array
 for (i = 0; i < 9; i++)
 {
-    fingerPosStr.push(fingerPositions.add("edittext", undefined, ""));
-    //fingerPosStr[i] = fingerPositions.add("edittext", undefined, "");
+    fingerPosStr.push(fingerPositions.add("edittext", undefined, ""));  // input obj
     fingerPosStr[i].characters = 2;
 
+    //visibility based on available strings 
     if (i > 5) fingerPosStr[i].visible = false;
 }
 
-
-// Fret Position Input
-var fretPositions = myWindow.add('group {orientation: "row"}');
+// fret Position input group ---------
+var fretPositions = myWindow.add('group {orientation: "row"}');     // container
 fretPositions.alignment = "left"
 
-fretPositions.add("statictext", undefined, "Fret Positions:");
+fretPositions.add("statictext", undefined, "Fret Positions:");      // text obj
 
-var fretPosStr = [];
-
+var fretPosStr = [];    // input obj array
 for (i = 0; i < 9; i++)
 {
-    fretPosStr.push(fretPositions.add("edittext", undefined, ""));
-    
+    fretPosStr.push(fretPositions.add("edittext", undefined, ""));      // input obj
     fretPosStr[i].characters = 2;
 
+    //visibility based on available strings
     if (i > 5) fretPosStr[i].visible = false;
 }
 
-// X,Y Position Input
-var xyPosition = myWindow.add('group {orientation: "row"}');
+// X,Y Position input group ---------
+var xyPosition = myWindow.add('group {orientation: "row"}');        // container
 xyPosition.alignment = "left"
 
-xyPosition.add("statictext", undefined, "Position X:");
-var xPosistion = xyPosition.add("edittext", undefined, "0");
-
-xyPosition.add("statictext", undefined, "Position Y:");
-var yPosistion = xyPosition.add("edittext", undefined, "0");
-
+xyPosition.add("statictext", undefined, "Position X:");             // text obj
+var xPosistion = xyPosition.add("edittext", undefined, "0");        // input obj
 xPosistion.characters = 4;
+
+xyPosition.add("statictext", undefined, "Position Y:");             // text obj
+var yPosistion = xyPosition.add("edittext", undefined, "0");        // input obj
 yPosistion.characters = 4;
 
-// Width,Height Diagram Size Input
-var diagramSize = myWindow.add('group {orientation: "row"}');
+// Width, Height Diagram Size input group ---------
+var diagramSize = myWindow.add('group {orientation: "row"}');       // container
 diagramSize.alignment = "left"
 
-diagramSize.add("statictext", undefined, "Diagram Size X:");
-var diagramWidth = diagramSize.add("edittext", undefined, "100");
-
-diagramSize.add("statictext", undefined, "Diagram Size Y:");
-var diagramHeight = diagramSize.add("edittext", undefined, "100");
-
+diagramSize.add("statictext", undefined, "Diagram Width:");         // text obj
+var diagramWidth = diagramSize.add("edittext", undefined, "100");   // input obj
 diagramWidth.characters = 4;
+
+diagramSize.add("statictext", undefined, "Diagram Height:");        // text obj
+var diagramHeight = diagramSize.add("edittext", undefined, "100");  // input obj
 diagramHeight.characters = 4;
 
-//String and Fret Thickness
-var stringAndFretThickness = myWindow.add('group {orientation: "row"}');
+// String and Fret Thickness input group ---------
+var stringAndFretThickness = myWindow.add('group {orientation: "row"}');            // container
 stringAndFretThickness.alignment = "left"
 
-stringAndFretThickness.add("statictext", undefined, "String Thickness:");
-var stringThickness = stringAndFretThickness.add("edittext", undefined, "auto");
-
-stringAndFretThickness.add("statictext", undefined, "Fret Thickness:");
-var fretThickness = stringAndFretThickness.add("edittext", undefined, "auto");
-
+// String Thickness
+stringAndFretThickness.add("statictext", undefined, "String Thickness:");           // text obj
+var stringThickness = stringAndFretThickness.add("edittext", undefined, "auto");    // input obj
 stringThickness.characters = 4;
+
+// Fret Thickness
+stringAndFretThickness.add("statictext", undefined, "Fret Thickness:");             // text obj
+var fretThickness = stringAndFretThickness.add("edittext", undefined, "auto");      // input obj
 fretThickness.characters = 4;
 
- //Dynamic UI Changes
- numberOfStringsDropDown.onChange = function () {
+//Dynamic UI Changes -------
+numberOfStringsDropDown.onChange = function () {
 
     for (i = 4; i < 10; i++)
     {
         if (numberOfStringsDropDown.selection == numberOfStringsDropDown.items[i-4]) 
         {
+            //change input visibility based on selected dropmenu option
             for (var j = 0; j < 9; j++)
             if (j < i) 
             {
@@ -122,55 +120,54 @@ fretThickness.characters = 4;
             }
            
             //change the diagram height accordingly
-            var w = parseInt(diagramWidth.text);
-            var currentString = (numberOfStringsDropDown.selection).text;
-            var currentFret = (numberOfFretsDropDown.selection).text;
-            var s = parseInt(currentString.charAt(0));
-            var f = parseInt(currentFret.charAt(0)) + 1;
+            var currentString = (numberOfStringsDropDown.selection).text;   // number of strings as text
+            var currentFret = (numberOfFretsDropDown.selection).text;       // number of frets as text
+            var w = parseInt(diagramWidth.text);                            // the diagram width cast to Int (TODO: cast to float)
+            //get the first char of the text (contains number of strings and frets)
+            var s = parseInt(currentString.charAt(0));                      // number of strings as Int
+            var f = parseInt(currentFret.charAt(0)) + 1;                    // number of frets as Int plus the nut
+            //determine the new diagram height with rule of three
             var changedHeight =  f * w / s;
             diagramHeight.text = String(changedHeight);
+
             myWindow.update();
         } 
-        
     }
-
- }
+}
  
- numberOfFretsDropDown.onChange = function () {
+numberOfFretsDropDown.onChange = function () {
 
     for (i = 5; i < 11; i++)
     {
         if (numberOfFretsDropDown.selection == numberOfFretsDropDown.items[i-5]) 
         {
             //change the diagram height accordingly 
-            var valW = parseInt(diagramWidth.text);
-            var currentString = (numberOfStringsDropDown.selection).text;
-            var valP = parseInt(currentString.charAt(0));
-            var changedHeight =  (i) * valW / valP;
+            var currentString = (numberOfStringsDropDown.selection).text;       // number of strings as text
+            var w = parseInt(diagramWidth.text);                                // the diagram width cast to Int (TODO: cast to float)
+            //get the first char of the text (contains number of strings). The number of frets is the (i)
+            var s = parseInt(currentString.charAt(0));                          // number of strings as Int
+            //determine the new diagram height with rule of three
+            var changedHeight =  i * w / s;
             diagramHeight.text = String(changedHeight);
+
             myWindow.update();
         } 
-        
     }
+}
 
- }
-
-//Buttons
-var myButtonGroup = myWindow.add("group");
+//Buttons ------
+var myButtonGroup = myWindow.add("group");                                          // container
 myButtonGroup.alignment = "right";
-myWindow.createBtn = myButtonGroup.add("button", undefined, "Create Chord");
-myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");
 
-myWindow.layout.layout(true);
+myWindow.createBtn = myButtonGroup.add("button", undefined, "Create Chord");        // button obj
+myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");                // button obj
 
+myWindow.layout.layout(true);   //TODO check if this line of code is needed
+
+//Buttons events
 myWindow.createBtn.onClick = function () {
-
     
-    
-    
-    
-    
-    
+    // Get user input and eveluate it to arguments for the function createChordDiagram (TODO: more evaluation is needed)
     var xPosArg = parseFloat(xPosistion.text.replace(",", ".")); 
     var yPosArg = parseFloat(yPosistion.text.replace(",", "."));
     var dWArg = parseFloat(diagramWidth.text.replace(",", "."));
@@ -193,10 +190,13 @@ myWindow.createBtn.onClick = function () {
         fingerPosArg.push(fingerPosStr[i].text);
     }
     
-   // var thickStrings = stringThickness.text;
+    //  TODO pass [thickStrings] and [thickFrets] as undefined if they do not contain numbers 
+    //var thickStrings = stringThickness.text;
     //var thickFrets = fretThickness.text;
 
-    if (nameOfChord == "") nameOfChord = " ";
+    if (nameOfChord == "") nameOfChord = " ";   // if a completely empty string is passed, the text object will vanish uppon creation
+
+    //Pass the arguments and call the function to create the diagram
     createChordDiagram(xPosArg, yPosArg, dWArg, dHArg, numberOfStringsArg, numberOfFretsArg, nameOfChord, fretPosArg, fingerPosArg);
 
     myWindow.close();
@@ -212,13 +212,8 @@ myWindow.closeBtn.onClick = function () {
 myWindow.show();
 
 
-
-
-
-
-//createChordDiagram(100, 500, 120, 120, 6, 5, "F7#5#9", ["1","0","1","2","2","4"], ["T","-","1","3","3","4"],);
-
 /**
+ * Example: createChordDiagram(100, 500, 120, 120, 6, 5, "F7#5#9", ["1", "0", "1", "2", "2", "4"], ["T", "-", "1", "3", "3", "4"], 1.5, .5);
  * @param {*} xx                        x position of the diagram
  * @param {*} yy                        y position of the diagram
  * @param {*} width                     width of diagram
@@ -421,5 +416,39 @@ function makeColor(r,g,b) //TODO: change to CMYK
     c.green = g;
     c.blue  = b;
     return c;
+}
+
+function init()
+{
+    
+
+    //sets fill and stroke defaults to true
+    doc.defaultFilled = true;
+    doc.defaultStroked = true;
+
+    //Inspecting if the active layer of the document is locked
+
+    if (doc.activeLayer.locked) 
+    {
+        alert("The active layer is locked");
+        return;
+    } else doc = app.activeDocument.activeLayer;
+
+    var newRGBColor = new RGBColor();
+    var storeRGBColorF = new RGBColor();
+    var storeRGBColorB = new RGBColor();
+
+    //TODO: save current colors and restore them at the end of the script
+    //Restore the colors
+    storeRGBColorF = app.activeDocument.defaultFillColor ;
+    storeRGBColorB = app.activeDocument.defaultStrokeColor;
+
+    //Turn colors black
+    newRGBColor.red = 0;
+    newRGBColor.green = 0;
+    newRGBColor.blue = 0;
+    app.activeDocument.defaultFillColor = newRGBColor;
+    app.activeDocument.defaultStrokeColor = newRGBColor;
+   
 }
 
