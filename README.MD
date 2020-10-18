@@ -1,4 +1,4 @@
-## Guitar Chord Diagram Generator for Adobe Illustrator (v0.2.0 alpha)
+## Guitar Chord Diagram Generator for Adobe Illustrator (v0.2.1 alpha)
 
 
 

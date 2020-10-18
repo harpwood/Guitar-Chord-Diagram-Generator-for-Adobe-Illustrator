@@ -122,7 +122,8 @@ function createUI()
                 //change the diagram height accordingly
                 var currentString = (numberOfStringsDropDown.selection).text;   // number of strings as text
                 var currentFret = (numberOfFretsDropDown.selection).text;       // number of frets as text
-                var w = parseInt(diagramWidth.text);                            // the diagram width cast to Int (TODO: cast to float)
+
+                var w = parseFloat(diagramWidth.text.replace(",", ".")); 
                 //get the first char of the text (contains number of strings and frets)
                 var s = parseInt(currentString.charAt(0));                      // number of strings as Int
                 var f = parseInt(currentFret.charAt(0)) + 1;                    // number of frets as Int plus the nut
@@ -143,7 +144,7 @@ function createUI()
             {
                 //change the diagram height accordingly 
                 var currentString = (numberOfStringsDropDown.selection).text;       // number of strings as text
-                var w = parseInt(diagramWidth.text);                                // the diagram width cast to Int (TODO: cast to float)
+                var w = parseFloat(diagramWidth.text.replace(",", ".")); 
                 //get the first char of the text (contains number of strings). The number of frets is the (i)
                 var s = parseInt(currentString.charAt(0));                          // number of strings as Int
                 //determine the new diagram height with rule of three
@@ -162,12 +163,11 @@ function createUI()
     myWindow.createBtn = myButtonGroup.add("button", undefined, "Create Chord");        // button obj
     myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");                // button obj
 
-    myWindow.layout.layout(true);   //TODO check if this line of code is needed
+    myWindow.layout.layout(true);   
 
     //Buttons events
     myWindow.createBtn.onClick = function () {
         
-        // Get user input and eveluate it to arguments for the function createChordDiagram (TODO: more evaluation is needed)
         xPosArg = parseFloat(xPosistion.text.replace(",", ".")); 
         yPosArg = parseFloat(yPosistion.text.replace(",", "."));
         dWArg = parseFloat(diagramWidth.text.replace(",", "."));
@@ -175,7 +175,9 @@ function createUI()
         
         numberOfStringsArg = parseFloat(numberOfStringsDropDown.selection.text.replace(",", ".").charAt(0));
         numberOfFretsArg = parseFloat(numberOfFretsDropDown.selection.text.replace(",", ".").charAt(0));
+
         nameOfChord = chordName.text; 
+        if (nameOfChord == "") nameOfChord = " ";   // if a completely empty string is passed, the text object will vanish uppon creation
         
         fretPosArg = [];
         for (var i = 0; i < fretPosStr.length; i++)
@@ -190,17 +192,15 @@ function createUI()
             fingerPosArg.push(fingerPosStr[i].text);
         }
         
-        //  TODO pass [thickStrings] and [thickFrets] as undefined if they do not contain numbers 
-        thickStrings = stringThickness.text == "auto" ? undefined : parseFloat(stringThickness.text.replace(",", "."));
-        thickFrets = fretThickness.text == "auto" ? undefined : parseFloat(fretThickness.text.replace(",", "."));
-
-        if (nameOfChord == "") nameOfChord = " ";   // if a completely empty string is passed, the text object will vanish uppon creation
-
+        thickStrings = isNaN(parseFloat(stringThickness.text.replace(",", "."))) ? undefined : parseFloat(stringThickness.text.replace(",", "."));
+        thickFrets = isNaN(parseFloat(fretThickness.text.replace(",", "."))) ? undefined : parseFloat(fretThickness.text.replace(",", "."));
+        
         //Pass the arguments and call the function to create the diagram via BridgeTalk
         try {btExecute('createChordDiagram', ['xPosArg', 'yPosArg', 'dWArg', 'dHArg', 'numberOfStringsArg', 'numberOfFretsArg', 'nameOfChord', 'fretPosArg', 'fingerPosArg', 'thickStrings', 'thickFrets']);}
         catch(e){alert("Some went wrong: " + e, "Oops!!!")};
 
     }
+
     myWindow.closeBtn.onClick = function () {myWindow.close();}
 
     myWindow.show();
@@ -208,17 +208,17 @@ function createUI()
 
 /**
  * Example: createChordDiagram(100, 500, 120, 120, 6, 5, "F7#5#9", ["1", "0", "1", "2", "2", "4"], ["T", "-", "1", "3", "3", "4"], 1.5, .5);
- * @param {*} xx                        x position of the diagram
- * @param {*} yy                        y position of the diagram
- * @param {*} width                     width of diagram
- * @param {*} height                    height of diagram 
- * @param {*} numStrings                number of strings 
- * @param {*} numFrets                  number of frets
- * @param {*} chordNameUserInput        name of chord
- * @param {*} fingerUsedUserInput       fingering as array eg ["-", "-", "1", "2", "3", "-"] for the chord A
- * @param {*} stringPositionUserInput   open ("o"), close ("x") strings and number of fret for each finger as array eg ["x", "o", "2", "2", "2", "o"]
- * @param {*} [strGridLinesThickness]   (optional) The thickness of the strings. If no value passes then it is autocalculated
- * @param {*} [fretGridLinesThickness]  (optional) The thickness of the frets. If no value passes then it is autocalculated
+ * @param {* Float} xx                      - The x position of the diagram
+ * @param {* Float} yy                      - The y position of the diagram
+ * @param {* Float} width                   - The width of diagram
+ * @param {* Float} height                  - The height of diagram 
+ * @param {* Int} numStrings                - The number of strings 
+ * @param {* Int} numFrets                  - The number of frets
+ * @param {* String} chordNameUserInput     - The name of chord
+ * @param {* Array} fingerUsedUserInput     - The fingers used as Array<String> eg ["-", "-", "1", "2", "3", "-"] for the chord A
+ * @param {* Array} stringPositionUserInput - The fingers position as Array<String>, open ("o"), close ("x") strings and number of fret for each finger, eg ["x", "o", "2", "2", "2", "o"]
+ * @param {* Float} strGridLinesThickness   [optional] - The thickness of the strings. If no value passes then it is autocalculated
+ * @param {* Float} fretGridLinesThickness  [optional] - The thickness of the frets. If no value passes then it is autocalculated
  */
 function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNameUserInput, stringPositionUserInput, fingerUsedUserInput, strGridLinesThickness, fretGridLinesThickness)
 {
@@ -234,7 +234,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     for (var i = 0 ; i < numFrets + 1 ; i++)    // we add +1 because of the "nut" 
     {
         var shapePath = app.activeDocument.activeLayer.pathItems.add();     // shape obj
-        shapePath.strokeColor = makeColor(0,0,0);
+        shapePath.strokeColor = makeColor(0, 0, 0, 100);
         shapePath.strokeCap = StrokeCap.BUTTENDCAP;
         shapePath.strokeJoin = StrokeJoin.ROUNDENDJOIN;
         shapePath.strokeWidth = fretGridLinesThickness;
@@ -261,8 +261,8 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     {
         var shapePath = app.activeDocument.activeLayer.pathItems.add();     // shape obj
         shapePath.stroked = true;
-        shapePath.strokeColor = makeColor(0,0,0);
-        shapePath.fillColor = makeColor(0,0,0);
+        shapePath.strokeColor = makeColor(0, 0, 0, 100);
+        shapePath.fillColor = makeColor(0, 0, 0, 100);
         shapePath.filled = false;
         shapePath.strokeCap = StrokeCap.BUTTENDCAP;
         shapePath.strokeJoin = StrokeJoin.MITERENDJOIN;
@@ -294,8 +294,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     // positioning the fingering on diagram
     for (var f = 0; f < numStrings; f++ )
     {
-        //TODO evaluate input
-        if (fingerUsedUserInput[f] == "-") fingerUsedUserInput[f] = "";                 // if string is empty (""), will vanish
+        if (isNaN(parseInt(fingerUsedUserInput[f]))) fingerUsedUserInput[f] = "";       // if string is empty (""), will vanish (desired)
         fingerUsedTextRef[f] = doc.textFrames.pointText(
                 [xx + (srtGap * f) - (srtGap / 8), yy - height - frtGap / 2]);          // pointText obj
         fingerUsedTextRef[f].contents = fingerUsedUserInput[f];                         // apply user input text in contents
@@ -311,7 +310,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
         if (stringPositionUserInput[s] == "X") stringPositionUserInput[s] = "x";
         if (stringPositionUserInput[s] == "O" || stringPositionUserInput[s] == "0") stringPositionUserInput[s] = "o";
 
-        if(parseInt(stringPositionUserInput[s]))
+        if(!isNaN(parseInt(stringPositionUserInput[s])))
         {
             var val = stringPositionUserInput[s];
             fingersCopy.push(val);
@@ -381,19 +380,21 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
         // if is fingering draw circle
         else if (Number(stringPositionUserInput[s]) < numFrets + 1 + neckGap)
         {
-            var finger = doc.pathItems;
-            finger.strokeColor = makeColor(0,0,0);
-            finger.fillColor = makeColor(0,0,0);
-            finger.filled = true;
-            var radius;
+            var shapeItem = doc.pathItems;
 
-            // TODO draw slightly smaller circles
-            if (srtGap < frtGap) radius = srtGap; else radius = frtGap;
-            finger.ellipse(yy - frtGap * (Number(stringPositionUserInput[(s)]) - 1 - neckGap), xx + srtGap * s - srtGap / 2 * frtGap / srtGap, radius, radius);          
+            var radius;
+            radius = srtGap < frtGap ? srtGap : frtGap;
+            radius *= .9;
+            var offset = srtGap < frtGap ? (srtGap - radius) / 2 : (frtGap - radius) / 2;
+
+            var finger = shapeItem.ellipse(yy - frtGap * (Number(stringPositionUserInput[(s)]) - 1 - neckGap) - offset, xx + srtGap * s - srtGap / 2 * frtGap / srtGap + offset, radius, radius);          
+            finger.strokeColor = makeColor(0, 0, 0, 100);
+            finger.fillColor = makeColor(0, 0, 0, 100);
+            finger.filled = true;
         }
         else //invalid fingered fret, make the string red
         {
-            var red = makeColor(255,0,0);
+            var red = makeColor(0, 99, 100, 0);
             strings[s].strokeColor = red;
             strings[s].strokeWidth *= 3;
             fingerUsedTextRef[s].contents = "!!";
@@ -401,13 +402,16 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     }
 }
 
-function makeColor(r,g,b) // TODO: change to CMYK
+function makeColor(c, m, y, k) // TODO: change to CMYK
 {
-    var c = new RGBColor();
-    c.red   = r;
-    c.green = g;
-    c.blue  = b;
-    return c;
+    var col = new CMYKColor();
+    
+    col.cyan = c;
+    col.magenta = m;
+    col.yellow = y;
+    col.black = k;
+
+    return col;
 }
 
 function init()
@@ -416,32 +420,12 @@ function init()
     if ( app.documents.length < 1 ) {doc = app.documents.add();}
     else {doc = app.activeDocument;}
 
-    // sets fill and stroke defaults to true
-    doc.defaultFilled = true;
-    doc.defaultStroked = true;
-
     // Inspecting if the active layer of the document is locked
     if (doc.activeLayer.locked) 
     {
         alert("The active layer is locked");
         return;     // TODO: unlock layer or create a new layer)
     } else doc = app.activeDocument.activeLayer;
-
-    var newRGBColor = new RGBColor();
-    var storeRGBColorF = new RGBColor();
-    var storeRGBColorB = new RGBColor();
-
-    // TODO: save current colors and restore them at the end of the script
-    // Restore the colors
-    storeRGBColorF = app.activeDocument.defaultFillColor ;
-    storeRGBColorB = app.activeDocument.defaultStrokeColor;
-
-    // Turn colors black
-    newRGBColor.red = 0;
-    newRGBColor.green = 0;
-    newRGBColor.blue = 0;
-    app.activeDocument.defaultFillColor = newRGBColor;
-    app.activeDocument.defaultStrokeColor = newRGBColor;
 }
 
 /** Sends a function with its arguments to be executed on Illustrator via BridgeTalk
