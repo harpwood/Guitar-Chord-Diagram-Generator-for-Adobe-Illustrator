@@ -26,7 +26,7 @@ This script will generate guitar chord diagrams for you on Adobe Illustrator. It
 
 ~~user interface (more details later)~~
 
-grouping the diagram after completion
+~~grouping the diagram after completion~~
 
 polishing
 
