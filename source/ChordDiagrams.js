@@ -222,6 +222,9 @@ function createUI()
  */
 function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNameUserInput, stringPositionUserInput, fingerUsedUserInput, strGridLinesThickness, fretGridLinesThickness)
 {
+    //The obj that will group the chord diagram elements together
+    var chordGroup = app.activeDocument.groupItems.add();
+
     // create the frets -----
     var fretX = xx;      
     var fretY = yy; 
@@ -233,7 +236,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     var frets = []; // array of shape paths
     for (var i = 0 ; i < numFrets + 1 ; i++)    // we add +1 because of the "nut" 
     {
-        var shapePath = app.activeDocument.activeLayer.pathItems.add();     // shape obj
+        var shapePath = chordGroup.pathItems.add();         // shape obj
         shapePath.strokeColor = makeColor(0, 0, 0, 100);
         shapePath.strokeCap = StrokeCap.BUTTENDCAP;
         shapePath.strokeJoin = StrokeJoin.ROUNDENDJOIN;
@@ -245,8 +248,9 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
 
         fretY = fretY - fretGap;    // change the value for the next fret
 
-        frets.push(shapePath);      // add fret to array for grouping later
+        frets.push(shapePath);      // add fret to array for easy manipulation later
     }
+    
     
     // create strings -----
     var strX = xx;
@@ -259,7 +263,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     var strings = [];   // array of shape paths
     for (var ii = 0 ; ii < numStrings; ii++)
     {
-        var shapePath = app.activeDocument.activeLayer.pathItems.add();     // shape obj
+        var shapePath = chordGroup.pathItems.add();             // shape obj
         shapePath.stroked = true;
         shapePath.strokeColor = makeColor(0, 0, 0, 100);
         shapePath.fillColor = makeColor(0, 0, 0, 100);
@@ -272,30 +276,27 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
 
         strX = strX + srtGap;      // change the value for the next string
 
-        strings.push(shapePath);    // add string to array for grouping later
+        strings.push(shapePath);    // add string to array easy manipulation later
     }
  
     //Placing the name of the chord -----
+    var textRef = chordGroup.textFrames.add();      // text obj
     var fsize = width / 5; // TODO Figure out a better way to set font size 
-    var pathRef = doc.pathItems.rectangle(yy + fsize * 1.2, xx, width ,fsize);  // rectangle obj
-    var textRef = doc.textFrames.areaText(pathRef);                             // define rectangle as text area
-    var textPar = textRef.paragraphs.add(chordNameUserInput);                   // apply the chord name from user input
-
-    textRef.textRange.characterAttributes.size = fsize;                         // font size
-    textPar.textFont = app.textFonts.getByName("Calibri");                      // apply font TODO: determine font
-    var paraAttr = textPar.paragraphAttributes;
-    paraAttr.justification = Justification.CENTER;
+    textRef.position = Array(xx + width /2, yy + fsize * 1.2);
+    textRef.contents = chordNameUserInput;
+    textRef.textRange.size = fsize;
+    textRef.textRange.justification = Justification.CENTER;
 
     //Placing the fingering, fingers wise -----
-    var fingerUsedTextRef=[];           // array of text oj
-    var fingerUsedFontStyle=[];         // array of font attributes
+    var fingerUsedTextRef = [];           // array of text oj
+    var fingerUsedFontStyle = [];         // array of font attributes
     var frtGap = height / (numFrets);   // the gap between frets
 
     // positioning the fingering on diagram
     for (var f = 0; f < numStrings; f++ )
     {
         if (isNaN(parseInt(fingerUsedUserInput[f]))) fingerUsedUserInput[f] = "";       // if string is empty (""), will vanish (desired)
-        fingerUsedTextRef[f] = doc.textFrames.pointText(
+        fingerUsedTextRef[f] = chordGroup.textFrames.pointText(
                 [xx + (srtGap * f) - (srtGap / 8), yy - height - frtGap / 2]);          // pointText obj
         fingerUsedTextRef[f].contents = fingerUsedUserInput[f];                         // apply user input text in contents
         fingerUsedFontStyle[f] = fingerUsedTextRef[f].textRange.characterAttributes;    
@@ -328,7 +329,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
         //determing the fret number of the diagram
         neckGap = Number(fingersCopy[0]) - 1; 
         
-        neckGapTextRef = doc.textFrames.pointText([xx - srtGap * 1.05, yy - frtGap * .75]);        // pointText obj
+        neckGapTextRef = chordGroup.textFrames.pointText([xx - srtGap * 1.05, yy - frtGap * .75]);        // pointText obj
         neckGapTextRef.contents = (neckGap + 1).toString();                                     // apply the neckGap as text in contents
         neckGapFontStyle = neckGapTextRef.textRange.characterAttributes;
         neckGapFontStyle.textFont = app.textFonts.getByName("Calibri"); //TODO determine font
@@ -342,7 +343,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             // ...so the neckGap will reach the lowest fingered fret.
             neckGap = Number(fingersCopy[0]) - 1;
 
-            neckGapTextRef = doc.textFrames.pointText([xx - srtGap * 1.05, yy - frtGap * .75]);
+            neckGapTextRef = chordGroup.textFrames.pointText([xx - srtGap * 1.05, yy - frtGap * .75]);
             neckGapTextRef.contents = (neckGap+1).toString();
             neckGapFontStyle = neckGapTextRef.textRange.characterAttributes;
             neckGapFontStyle.textFont = app.textFonts.getByName("Calibri");
@@ -362,7 +363,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
         // if is closed string
         if (stringPositionUserInput[s] == "x")
         {
-            stringNumberTextRef[s] = doc.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);     // pointText obj
+            stringNumberTextRef[s] = chordGroup.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);     // pointText obj
             stringNumberTextRef[s].contents = stringPositionUserInput[s];                                               // apply user input text in contents
             stringNumberFontStyle[s] = stringNumberTextRef[s].textRange.characterAttributes;
             stringNumberFontStyle[s].textFont = app.textFonts.getByName("Calibri"); //TODO determine font
@@ -371,7 +372,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
         // if is open string
         else  if (stringPositionUserInput[s] == "o")
         {
-            stringNumberTextRef[s] = doc.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);
+            stringNumberTextRef[s] = chordGroup.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);
             stringNumberTextRef[s].contents = stringPositionUserInput[s];
             stringNumberFontStyle[s] = stringNumberTextRef[s].textRange.characterAttributes;
             stringNumberFontStyle[s].textFont = app.textFonts.getByName("Calibri");
@@ -380,7 +381,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
         // if is fingering draw circle
         else if (Number(stringPositionUserInput[s]) < numFrets + 1 + neckGap)
         {
-            var shapeItem = doc.pathItems;
+            var shapeItem = chordGroup.pathItems;
 
             var radius;
             radius = srtGap < frtGap ? srtGap : frtGap;
