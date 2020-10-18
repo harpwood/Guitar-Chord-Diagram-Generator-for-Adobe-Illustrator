@@ -3,7 +3,7 @@ createUI();
 
 function createUI()
 {
-    var myWindow = new Window("dialog", "Chord Diagram Creator");       // UI base dialog box
+    var myWindow = new Window("palette", "Chord Diagram Creator");       // UI base dialog box
 
     // Chord name input group --------
     var chordNameInput = myWindow.add('group {orientation: "row"}');    // container 
@@ -168,50 +168,43 @@ function createUI()
     myWindow.createBtn.onClick = function () {
         
         // Get user input and eveluate it to arguments for the function createChordDiagram (TODO: more evaluation is needed)
-        var xPosArg = parseFloat(xPosistion.text.replace(",", ".")); 
-        var yPosArg = parseFloat(yPosistion.text.replace(",", "."));
-        var dWArg = parseFloat(diagramWidth.text.replace(",", "."));
-        var dHArg = parseFloat(diagramHeight.text.replace(",", "."));
+        xPosArg = parseFloat(xPosistion.text.replace(",", ".")); 
+        yPosArg = parseFloat(yPosistion.text.replace(",", "."));
+        dWArg = parseFloat(diagramWidth.text.replace(",", "."));
+        dHArg = parseFloat(diagramHeight.text.replace(",", "."));
         
-        var numberOfStringsArg = parseFloat(numberOfStringsDropDown.selection.text.replace(",", ".").charAt(0));
-        var numberOfFretsArg = parseFloat(numberOfFretsDropDown.selection.text.replace(",", ".").charAt(0));
-        var nameOfChord = chordName.text; 
+        numberOfStringsArg = parseFloat(numberOfStringsDropDown.selection.text.replace(",", ".").charAt(0));
+        numberOfFretsArg = parseFloat(numberOfFretsDropDown.selection.text.replace(",", ".").charAt(0));
+        nameOfChord = chordName.text; 
         
-        var fretPosArg = [];
+        fretPosArg = [];
         for (var i = 0; i < fretPosStr.length; i++)
         {
             if (fretPosStr[i].text == "") fretPosArg.push("x");
             else fretPosArg.push(fretPosStr[i].text);
         }
 
-        var fingerPosArg = [];
+        fingerPosArg = [];
         for (var i = 0; i < fingerPosStr.length; i++)
         {
             fingerPosArg.push(fingerPosStr[i].text);
         }
         
         //  TODO pass [thickStrings] and [thickFrets] as undefined if they do not contain numbers 
-        //var thickStrings = stringThickness.text;
-        //var thickFrets = fretThickness.text;
+        thickStrings = stringThickness.text == "auto" ? undefined : parseFloat(stringThickness.text.replace(",", "."));
+        thickFrets = fretThickness.text == "auto" ? undefined : parseFloat(fretThickness.text.replace(",", "."));
 
         if (nameOfChord == "") nameOfChord = " ";   // if a completely empty string is passed, the text object will vanish uppon creation
 
-        //Pass the arguments and call the function to create the diagram
-        createChordDiagram(xPosArg, yPosArg, dWArg, dHArg, numberOfStringsArg, numberOfFretsArg, nameOfChord, fretPosArg, fingerPosArg);
-
-        myWindow.close();
-
-    }
-    myWindow.closeBtn.onClick = function () {
-
-
-        myWindow.close();
+        //Pass the arguments and call the function to create the diagram via BridgeTalk
+        try {btExecute('createChordDiagram', ['xPosArg', 'yPosArg', 'dWArg', 'dHArg', 'numberOfStringsArg', 'numberOfFretsArg', 'nameOfChord', 'fretPosArg', 'fingerPosArg', 'thickStrings', 'thickFrets']);}
+        catch(e){alert("Some went wrong: " + e, "Oops!!!")};
 
     }
+    myWindow.closeBtn.onClick = function () {myWindow.close();}
 
     myWindow.show();
 }
-
 
 /**
  * Example: createChordDiagram(100, 500, 120, 120, 6, 5, "F7#5#9", ["1", "0", "1", "2", "2", "4"], ["T", "-", "1", "3", "3", "4"], 1.5, .5);
@@ -281,7 +274,6 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
 
         strings.push(shapePath);    // add string to array for grouping later
     }
-
  
     //Placing the name of the chord -----
     var fsize = width / 5; // TODO Figure out a better way to set font size 
@@ -331,19 +323,19 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     
     // the gap from nut to start of diagram
     var neckGap = 0; 
-    // if the lowest fretted fret is bigger than the total frets in diagram
-    if(Number(fingersCopy[0]) > numFrets + 1) 
+    // if the lowest fretted fret is higher than the 2rd fret
+    if(Number(fingersCopy[0]) > 2) 
     {
         //determing the fret number of the diagram
         neckGap = Number(fingersCopy[0]) - 1; 
-
-        neckGapTextRef = doc.textFrames.pointText([xx - srtGap / 2, yy - srtGap * .75]);        // pointText obj
+        
+        neckGapTextRef = doc.textFrames.pointText([xx - srtGap * 1.05, yy - frtGap * .75]);        // pointText obj
         neckGapTextRef.contents = (neckGap + 1).toString();                                     // apply the neckGap as text in contents
         neckGapFontStyle = neckGapTextRef.textRange.characterAttributes;
         neckGapFontStyle.textFont = app.textFonts.getByName("Calibri"); //TODO determine font
         neckGapFontStyle.size = srtGap * .75;   // TODO Figure out a better way to set font size
     }
-    else    // if the lowest fretted fret is not bigger than the total frets in diagram....
+    else    // if the lowest fretted fret is not higher than the the 2rd fret....
     {
         // ...check if the highest fret is bigger than the total frets in diagram... 
         if(Number(fingersCopy[fingersCopy.length - 1]) > numFrets) 
@@ -351,7 +343,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             // ...so the neckGap will reach the lowest fingered fret.
             neckGap = Number(fingersCopy[0]) - 1;
 
-            neckGapTextRef = doc.textFrames.pointText([xx - srtGap / 2, yy - srtGap * .75]);
+            neckGapTextRef = doc.textFrames.pointText([xx - srtGap * 1.05, yy - frtGap * .75]);
             neckGapTextRef.contents = (neckGap+1).toString();
             neckGapFontStyle = neckGapTextRef.textRange.characterAttributes;
             neckGapFontStyle.textFont = app.textFonts.getByName("Calibri");
@@ -450,6 +442,30 @@ function init()
     newRGBColor.blue = 0;
     app.activeDocument.defaultFillColor = newRGBColor;
     app.activeDocument.defaultStrokeColor = newRGBColor;
-   
 }
 
+/** Sends a function with its arguments to be executed on Illustrator via BridgeTalk
+ * 
+ * @param {*String} func The name of the function to sent as String
+ * @param {*Array} args The arguments of the function to sent as Array of Strings. Single arguments can be sent without being inside an Array
+ */
+function btExecute(func, args) 
+{
+    var bridgeTalk = new BridgeTalk();
+   
+    //bake the arguments
+    if (args != undefined) 
+    {
+        if ((typeof args == 'string') || (args instanceof String)) 
+            stringArgs = ((args != undefined) ? ('"' + args + '"') : '');
+		 else stringArgs = args;
+	} 
+    else stringArgs = '';
+    
+    //prepare the message
+    var msg = (eval(func) + '\r ' + func + '(' + stringArgs + ');');
+	bridgeTalk.target = "Illustrator";
+    bridgeTalk.body = msg;
+    
+	return bridgeTalk.send();
+}
