@@ -1,20 +1,92 @@
+
 init(); 
+chordFont = ScriptUI.newFont("palette").name;
+chordFontLaber = ScriptUI.newFont("palette").name;
+drawBarre = false;
+canRepositionX = false;
+canRepositionY = false;
+isReversed = false;
+
 createUI();
 
 function createUI()
 {
-    var myWindow = new Window("palette", "Chord Diagram Creator");       // UI base dialog box
+    var myWindow = new Window("palette", "Chord Diagram Creator");          // UI base dialog box
 
-    // Chord name input group --------
-    var chordNameInput = myWindow.add('group {orientation: "row"}');    // container 
-    chordNameInput.alignment = "left"
-    chordNameInput.add("statictext", undefined, "Chord Name:");         // text obj
+    // Chord name input, font selection, font size group --------
+    var chordNameInput = myWindow.add('group {orientation: "row"}');        // container 
+    chordNameInput.alignment = "right";
+    chordNameInput.add("statictext", undefined, "Chord Name:");             // text obj
 
-    var chordName = chordNameInput.add("edittext", undefined, "");      // input obj
+    var chordName = chordNameInput.add("edittext", undefined, "");          // input obj
     chordName.characters = 6;
     chordName.active = true;
 
-    // dropdown menus group ---------
+    // custom fonts group 1----
+    chordNameInput.add("statictext", undefined, "Chord Font:");             // text obj
+    var fontListMenu = chordNameInput.add("dropdownlist", undefined, []);   // dropdown menu obj
+    fontListMenu.maximumSize = [130, 20];
+    
+
+    chordNameInput.add("statictext", undefined, "Font Size:");                   // text obj
+    var chordLabelFontSize = chordNameInput.add("edittext", undefined, "auto");  // input obj
+    chordLabelFontSize.characters = 3;
+
+    // custom fonts group 2----
+    var customFontsGroup = myWindow.add('group {orientation: "row"}');          // container 
+    customFontsGroup.alignment = "right"
+
+   // customFontsGroup.add("statictext", undefined, "Frets Font:");             // text obj
+   // var favorites = customFontsGroup.add("dropdownlist", undefined, ["Your favorite chords   "]);   // dropdown menu obj (TODO impl)
+   //favorites.selection = favorites.items[0];                                    // default selected item
+    
+
+    customFontsGroup.add("statictext", undefined, "Frets Font:");             // text obj
+    var fontListMenuFrets = customFontsGroup.add("dropdownlist", undefined, []);   // dropdown menu obj
+    fontListMenuFrets.maximumSize = [130, 20];
+
+    customFontsGroup.add("statictext", undefined, "Font Size:");                // text obj
+    var chordFontSize = customFontsGroup.add("edittext", undefined, "auto");    // input obj
+    chordFontSize.characters = 3;
+    
+    // populate dropdown menus with fonts
+    var iCount = textFonts.length;
+    var newItem;
+    var fontList = []
+    for (var i=0; i<iCount; i++) {
+        sFontName = textFonts[i].name;
+        fontList.push(textFonts[i].name);
+        sFontName += " ";
+        sFontNames = sFontName + textFonts[i].style;
+        newItem = fontListMenu.add("item", sFontName);
+        newItem = fontListMenuFrets.add("item", sFontName);
+    }
+    
+    //customize fonts events
+    fontListMenu.onChange = function () {
+    
+        for(var i = 0; i < iCount; i++)
+        {
+           if (fontListMenu.selection == fontListMenu.items[i])
+           {
+            chordFontLaber = fontList[i];
+           }
+        }
+    }
+
+    fontListMenuFrets.onChange = function () {
+    
+        for(var i = 0; i < iCount; i++)
+        {
+           if (fontListMenuFrets.selection == fontListMenuFrets.items[i])
+           {
+            chordFont = fontList[i];
+           }
+        }
+    }
+
+
+    // dropdown menus group, barre ---------
     var strFretsGroup = myWindow.add('group {orientation: "row"}');                             // container
     strFretsGroup.alignment = "left"
     // Number of Strings dropdown menu
@@ -28,6 +100,10 @@ function createUI()
     var numberOfFretsDropDown = strFretsGroup.add("dropdownlist", undefined, 
         ["4 Frets", "5 Frets", "6 Frets", "7 Frets", "8 Frets", "9 Frets"]);                    // dropdown menu obj
     numberOfFretsDropDown.selection = numberOfFretsDropDown.items[1];                           // default selected item
+
+    var drawBarreBox =  strFretsGroup.add('checkbox', undefined, "draw barre");                                           // tick box
+    drawBarreBox.value = drawBarre;
+    drawBarreBox.onClick = function () {drawBarre = drawBarreBox.value;}
 
     // finger position input group ---------
     var fingerPositions = myWindow.add('group {orientation: "row"}');       // container
@@ -61,7 +137,7 @@ function createUI()
         if (i > 5) fretPosStr[i].visible = false;
     }
 
-    // X,Y Position input group ---------
+    // X,Y Position input, group ---------
     var xyPosition = myWindow.add('group {orientation: "row"}');        // container
     xyPosition.alignment = "left"
 
@@ -73,6 +149,16 @@ function createUI()
     var yPosistion = xyPosition.add("edittext", undefined, "0");        // input obj
     yPosistion.characters = 4;
 
+    xyPosition.add("statictext", undefined, "Reposition: ");            // text obj
+    var repositionXBox = xyPosition.add('checkbox', undefined, "x");                         // tick box obj
+    var repositionYBox = xyPosition.add('checkbox', undefined, "y");                         // tick box obj
+    var reversedBox = xyPosition.add('checkbox', undefined, "↲");                  // tick box obj
+    //xyPosition.add("statictext", undefined, "s:");            // text obj
+    var rePosSpacing = xyPosition.add("edittext", undefined, "spc");    // input obj
+    repositionXBox.onClick = function (){canRepositionX = repositionXBox.value;}
+    repositionYBox.onClick = function (){canRepositionY = repositionYBox.value;}
+    reversedBox.onClick = function ()   {isReversed     = reversedBox.value;}
+
     // Width, Height Diagram Size input group ---------
     var diagramSize = myWindow.add('group {orientation: "row"}');       // container
     diagramSize.alignment = "left"
@@ -81,9 +167,13 @@ function createUI()
     var diagramWidth = diagramSize.add("edittext", undefined, "100");   // input obj
     diagramWidth.characters = 4;
 
+    //var linkWH = diagramSize.add('checkbox', undefined, "☍");        // tick box obj (TODO impl)
+
     diagramSize.add("statictext", undefined, "Diagram Height:");        // text obj
     var diagramHeight = diagramSize.add("edittext", undefined, "100");  // input obj
     diagramHeight.characters = 4;
+    
+    //var linkHS = diagramSize.add('checkbox', undefined, "☍ to frets");  // tick box obj (TODO impl)
 
     // String and Fret Thickness input group ---------
     var stringAndFretThickness = myWindow.add('group {orientation: "row"}');            // container
@@ -158,9 +248,12 @@ function createUI()
 
     //Buttons ------
     var myButtonGroup = myWindow.add("group");                                          // container
-    myButtonGroup.alignment = "right";
+    myButtonGroup.alignment = "center";
 
-    myWindow.createBtn = myButtonGroup.add("button", undefined, "Create Chord");        // button obj
+    myWindow.newBtn = myButtonGroup.add("button", undefined, "Clear");                  // button obj
+    myWindow.createBtn = myButtonGroup.add("button", undefined, "Draw Chord");          // button obj
+    myWindow.saveBtn = myButtonGroup.add("button", undefined, "Save as");                  // button obj
+    myWindow.manageBtn = myButtonGroup.add("button", undefined, "Favorites");    // button obj
     myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");                // button obj
 
     myWindow.layout.layout(true);   
@@ -199,6 +292,26 @@ function createUI()
         try {btExecute('createChordDiagram', ['xPosArg', 'yPosArg', 'dWArg', 'dHArg', 'numberOfStringsArg', 'numberOfFretsArg', 'nameOfChord', 'fretPosArg', 'fingerPosArg', 'thickStrings', 'thickFrets']);}
         catch(e){alert("Some went wrong: " + e, "Oops!!!")};
 
+        if(canRepositionX)
+        {
+            var spc = parseInt(diagramWidth.text) / 2;
+            if(!isNaN(parseInt(rePosSpacing.text))) spc = parseInt(rePosSpacing.text);
+
+            var xpos = parseInt(xPosistion.text);
+            xPosistion.text = isReversed ? String(xpos - parseInt(diagramWidth.text) - spc) : String(xpos + parseInt(diagramWidth.text) + spc);
+
+            myWindow.update();
+        }
+        if(canRepositionY)
+        {
+            var spc = parseInt(diagramWidth.text) / 2;
+            if(!isNaN(parseInt(rePosSpacing.text))) spc = parseInt(rePosSpacing.text);
+
+            var ypos = parseInt(yPosistion.text);
+            yPosistion.text = isReversed ? String(ypos + parseInt(diagramHeight.text) + spc) : String(ypos - parseInt(diagramHeight.text) - spc);
+           
+            myWindow.update();
+        }
     }
 
     myWindow.closeBtn.onClick = function () {myWindow.close();}
@@ -286,7 +399,10 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     textRef.contents = chordNameUserInput;
     textRef.textRange.size = fsize;
     textRef.textRange.justification = Justification.CENTER;
-
+    //textRef.textFont = app.textFonts.getByName(chordFontLaber);
+    textRef.textRange.characterAttributes.textFont = textFonts.getByName(chordFontLaber);
+    
+    
     //Placing the fingering, fingers wise -----
     var fingerUsedTextRef = [];           // array of text oj
     var fingerUsedFontStyle = [];         // array of font attributes
@@ -295,12 +411,12 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
     // positioning the fingering on diagram
     for (var f = 0; f < numStrings; f++ )
     {
-        if (isNaN(parseInt(fingerUsedUserInput[f]))) fingerUsedUserInput[f] = "";       // if string is empty (""), will vanish (desired)
+        if (isNaN(parseInt(fingerUsedUserInput[f])) || parseInt(fingerUsedUserInput[f]) == 0) fingerUsedUserInput[f] = "";       // if string is empty (""), will vanish (desired)
         fingerUsedTextRef[f] = chordGroup.textFrames.pointText(
                 [xx + (srtGap * f) - (srtGap / 8), yy - height - frtGap / 2]);          // pointText obj
         fingerUsedTextRef[f].contents = fingerUsedUserInput[f];                         // apply user input text in contents
         fingerUsedFontStyle[f] = fingerUsedTextRef[f].textRange.characterAttributes;    
-        fingerUsedFontStyle[f].textFont = app.textFonts.getByName("Calibri"); //TODO determine font
+        fingerUsedFontStyle[f].textFont = app.textFonts.getByName(chordFont); //TODO determine font
         fingerUsedFontStyle[f].size = frtGap / 2;   // TODO Figure out a better way to set font size
     }
 
@@ -332,7 +448,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
         neckGapTextRef = chordGroup.textFrames.pointText([xx - srtGap * 1.05, yy - frtGap * .75]);        // pointText obj
         neckGapTextRef.contents = (neckGap + 1).toString();                                     // apply the neckGap as text in contents
         neckGapFontStyle = neckGapTextRef.textRange.characterAttributes;
-        neckGapFontStyle.textFont = app.textFonts.getByName("Calibri"); //TODO determine font
+        neckGapFontStyle.textFont = app.textFonts.getByName(chordFont); //TODO determine font
         neckGapFontStyle.size = srtGap * .75;   // TODO Figure out a better way to set font size
     }
     else    // if the lowest fretted fret is not higher than the the 2rd fret....
@@ -346,7 +462,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             neckGapTextRef = chordGroup.textFrames.pointText([xx - srtGap * 1.05, yy - frtGap * .75]);
             neckGapTextRef.contents = (neckGap+1).toString();
             neckGapFontStyle = neckGapTextRef.textRange.characterAttributes;
-            neckGapFontStyle.textFont = app.textFonts.getByName("Calibri");
+            neckGapFontStyle.textFont = app.textFonts.getByName(chordFont);
             neckGapFontStyle.size = srtGap * .75;
         }   
         // else the fret 0 is the "nut", so make it bold
@@ -366,7 +482,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             stringNumberTextRef[s] = chordGroup.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);     // pointText obj
             stringNumberTextRef[s].contents = stringPositionUserInput[s];                                               // apply user input text in contents
             stringNumberFontStyle[s] = stringNumberTextRef[s].textRange.characterAttributes;
-            stringNumberFontStyle[s].textFont = app.textFonts.getByName("Calibri"); //TODO determine font
+            stringNumberFontStyle[s].textFont = app.textFonts.getByName(chordFont); //TODO determine font
             stringNumberFontStyle[s].size = srtGap / 2; // TODO Figure out a better way to set font size
         } 
         // if is open string
@@ -375,7 +491,7 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             stringNumberTextRef[s] = chordGroup.textFrames.pointText([xx + (srtGap * s) - (srtGap / 8), yy + srtGap / 8]);
             stringNumberTextRef[s].contents = stringPositionUserInput[s];
             stringNumberFontStyle[s] = stringNumberTextRef[s].textRange.characterAttributes;
-            stringNumberFontStyle[s].textFont = app.textFonts.getByName("Calibri");
+            stringNumberFontStyle[s].textFont = app.textFonts.getByName(chordFont);
             stringNumberFontStyle[s].size = srtGap / 2; // TODO Figure out a better way to set font size
         } 
         // if is fingering draw circle
@@ -389,9 +505,11 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             var offset = srtGap < frtGap ? (srtGap - radius) / 2 : (frtGap - radius) / 2;
 
             var finger = shapeItem.ellipse(yy - frtGap * (Number(stringPositionUserInput[(s)]) - 1 - neckGap) - offset, xx + srtGap * s - srtGap / 2 * frtGap / srtGap + offset, radius, radius);          
-            finger.strokeColor = makeColor(0, 0, 0, 100);
+            finger.strokeWidth = 0;
             finger.fillColor = makeColor(0, 0, 0, 100);
+            finger.strokeColor = makeColor(0, 0, 0, 100);
             finger.filled = true;
+            
         }
         else //invalid fingered fret, make the string red
         {
@@ -401,6 +519,60 @@ function createChordDiagram(xx, yy, width, height, numStrings, numFrets, chordNa
             fingerUsedTextRef[s].contents = "!!";
         }
     }
+
+    if (drawBarre)
+    {  
+        for (var i = 1; i < 5; i++)
+        {
+        //if same finger is on more than 1 fret, draw barre
+            var l = getIndexOf(fingerUsedUserInput, i);
+            var h = getLastIndexOf(fingerUsedUserInput, i);
+
+            if (l != h)
+            {
+                var barre = chordGroup.pathItems.add();       
+                barre.setEntirePath([[xx + srtGap * l * frtGap / srtGap + offset, yy - frtGap * (Number(stringPositionUserInput[(l)]) - 1 - neckGap) - frtGap/2], 
+                    [xx + srtGap * h * frtGap / srtGap + offset, yy - frtGap * (Number(stringPositionUserInput[(l)]) - 1 - neckGap) - frtGap/2]]);  // draw barret
+                barre.strokeWidth = radius * .7;
+                barre.strokeColor = makeColor(0, 0, 0, 100);
+                barre.stroked = true;
+                barre.closed = true;
+            }
+        }
+    }
+    
+}
+
+function getIndexOf(arr, value)
+{
+    var index = -1;
+    for (var i = 0; i < arr.length; i++)
+    {
+        if (arr[i] == value)
+        {
+            index = i;
+            break;
+
+        }
+    }
+
+    return index;
+}
+
+function getLastIndexOf(arr, value)
+{
+    var index = -1;
+    for (var i = arr.length - 1; i > -1; i--)
+    {
+        if (arr[i] == value)
+        {
+            index = i;
+            break;
+
+        }
+    }
+
+    return index;
 }
 
 function makeColor(c, m, y, k) // TODO: change to CMYK
@@ -413,20 +585,6 @@ function makeColor(c, m, y, k) // TODO: change to CMYK
     col.black = k;
 
     return col;
-}
-
-function init()
-{
-    // Creates a new document if none exists
-    if ( app.documents.length < 1 ) {doc = app.documents.add();}
-    else {doc = app.activeDocument;}
-
-    // Inspecting if the active layer of the document is locked
-    if (doc.activeLayer.locked) 
-    {
-        alert("The active layer is locked");
-        return;     // TODO: unlock layer or create a new layer)
-    } else doc = app.activeDocument.activeLayer;
 }
 
 /** Sends a function with its arguments to be executed on Illustrator via BridgeTalk
@@ -453,4 +611,18 @@ function btExecute(func, args)
     bridgeTalk.body = msg;
     
 	return bridgeTalk.send();
+}
+
+function init()
+{
+    // Creates a new document if none exists
+    if ( app.documents.length < 1 ) {doc = app.documents.add();}
+    else {doc = app.activeDocument;}
+
+    // Inspecting if the active layer of the document is locked
+    if (doc.activeLayer.locked) 
+    {
+        alert("The active layer is locked");
+        return;     // TODO: unlock layer or create a new layer)
+    } else doc = app.activeDocument.activeLayer;
 }
