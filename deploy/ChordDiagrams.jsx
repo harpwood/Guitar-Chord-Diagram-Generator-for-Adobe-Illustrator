@@ -9,6 +9,8 @@ canRepositionX = false;
 canRepositionY = false;
 isReversed = false;
 
+canReset = false;
+
 createUI();
 
 function createUI()
@@ -33,7 +35,7 @@ function createUI()
     chordNameInput.add("statictext", undefined, "Font Size:");                   // text obj
     var chordLabelFontSize = chordNameInput.add("edittext", undefined, "auto");  // input obj
     chordLabelFontSize.characters = 3;
-
+    
     // custom fonts group 2----
     var customFontsGroup = myWindow.add('group {orientation: "row"}');          // container 
     customFontsGroup.alignment = "right"
@@ -55,6 +57,7 @@ function createUI()
     var iCount = textFonts.length;
     var newItem;
     var fontList = []
+
     for (var i=0; i<iCount; i++) {
         sFontName = textFonts[i].name;
         fontList.push(textFonts[i].name);
@@ -63,6 +66,9 @@ function createUI()
         newItem = fontListMenu.add("item", sFontName);
         newItem = fontListMenuFrets.add("item", sFontName);
     }
+
+    fontListMenu.selection = fontListMenu.items[getIndexOf(fontList, chordFontLaber)];
+    fontListMenuFrets.selection = fontListMenuFrets.items[getIndexOf(fontList, chordFont)];
     
     //customize fonts events
     fontListMenu.onChange = function () {
@@ -102,7 +108,7 @@ function createUI()
     var numberOfFretsDropDown = strFretsGroup.add("dropdownlist", undefined, 
         ["4 Frets", "5 Frets", "6 Frets", "7 Frets", "8 Frets", "9 Frets"]);                    // dropdown menu obj
     numberOfFretsDropDown.selection = numberOfFretsDropDown.items[1];                           // default selected item
-
+    
     var drawBarreBox =  strFretsGroup.add('checkbox', undefined, "draw barre");                                           // tick box
     drawBarreBox.value = drawBarre;
     drawBarreBox.onClick = function () {drawBarre = drawBarreBox.value;}
@@ -251,17 +257,51 @@ function createUI()
     //Buttons ------
     var myButtonGroup = myWindow.add("group");                                          // container
     myButtonGroup.alignment = "center";
-	
-	//TODO Impl
-    //myWindow.newBtn = myButtonGroup.add("button", undefined, "Clear");                  // button obj
-    myWindow.createBtn = myButtonGroup.add("button", undefined, "Draw Chord");          // button obj
-    //myWindow.saveBtn = myButtonGroup.add("button", undefined, "Save as");                  // button obj
-   // myWindow.manageBtn = myButtonGroup.add("button", undefined, "Favorites");    // button obj
+    var resetBox = myButtonGroup.add('checkbox', undefined, "Reset all?");                         // tick box obj
+    myWindow.newBtn = myButtonGroup.add("button", undefined, "New");                  // button obj
+    myWindow.createBtn = myButtonGroup.add("button", undefined, "Draw");          // button obj
+   // myWindow.saveBtn = myButtonGroup.add("button", undefined, "Save as");             // button obj
+   // myWindow.manageBtn = myButtonGroup.add("button", undefined, "Favorites");          // button obj
     myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");                // button obj
 
     myWindow.layout.layout(true);   
 
-    //Buttons events
+    resetBox.onClick = function (){canReset = resetBox.value;}
+
+    myWindow.newBtn.onClick = function ()
+    {
+        chordName.text = "";
+        
+        for (var i = 0; i < fretPosStr.length; i++)
+        {
+            fretPosStr[i].text = ""
+            
+        }
+        for (var i = 0; i < fingerPosStr.length; i++)
+        {
+            fingerPosStr[i].text = ""
+            
+        }
+        if (canReset) 
+        {
+            xPosistion.text = "0";
+            yPosistion.text = "0";
+            diagramWidth.text = "100";
+            diagramHeight.text = "100";
+            numberOfStringsDropDown.selection = numberOfStringsDropDown.items[2]; 
+            numberOfFretsDropDown.selection = numberOfFretsDropDown.items[1];
+            stringThickness.text = "auto";
+            fretThickness.text = "auto";
+            chordFontSize.text = "auto"; 
+            chordLabelFontSize.text = "auto";
+
+            chordFont = ScriptUI.newFont("palette").name;
+            chordFontLaber = ScriptUI.newFont("palette").name;  
+            fontListMenu.selection = fontListMenu.items[getIndexOf(fontList, chordFontLaber)];
+            fontListMenuFrets.selection = fontListMenuFrets.items[getIndexOf(fontList, chordFont)];
+        }
+    }
+
     myWindow.createBtn.onClick = function () {
         
         xPosArg = parseFloat(xPosistion.text.replace(",", ".")); 
