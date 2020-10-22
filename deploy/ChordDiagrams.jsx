@@ -251,12 +251,11 @@ function createUI()
     //Buttons ------
     var myButtonGroup = myWindow.add("group");                                          // container
     myButtonGroup.alignment = "center";
-	
-	//TODO Impl
-    //myWindow.newBtn = myButtonGroup.add("button", undefined, "Clear");                  // button obj
+
+    myWindow.newBtn = myButtonGroup.add("button", undefined, "Clear");                  // button obj
     myWindow.createBtn = myButtonGroup.add("button", undefined, "Draw Chord");          // button obj
-    //myWindow.saveBtn = myButtonGroup.add("button", undefined, "Save as");                  // button obj
-   // myWindow.manageBtn = myButtonGroup.add("button", undefined, "Favorites");    // button obj
+    myWindow.saveBtn = myButtonGroup.add("button", undefined, "Save as");                  // button obj
+    myWindow.manageBtn = myButtonGroup.add("button", undefined, "Favorites");    // button obj
     myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");                // button obj
 
     myWindow.layout.layout(true);   
