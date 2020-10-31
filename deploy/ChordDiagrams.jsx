@@ -2,13 +2,15 @@
 #targetengine 'main'
 
 init(); 
+
 chordFont = ScriptUI.newFont("palette").name;
 chordFontLaber = ScriptUI.newFont("palette").name;
 drawBarre = false;
 canRepositionX = false;
 canRepositionY = false;
 isReversed = false;
-
+isLinkHeightToFrets = false;
+islinkWidthToHeight = false;
 canReset = false;
 
 createUI();
@@ -156,11 +158,11 @@ function createUI()
     xyPosition.add("statictext", undefined, "Position Y:");             // text obj
     var yPosistion = xyPosition.add("edittext", undefined, "0");        // input obj
     yPosistion.characters = 4;
-
+    
     xyPosition.add("statictext", undefined, "Reposition: ");            // text obj
     var repositionXBox = xyPosition.add('checkbox', undefined, "x");                         // tick box obj
     var repositionYBox = xyPosition.add('checkbox', undefined, "y");                         // tick box obj
-    var reversedBox = xyPosition.add('checkbox', undefined, "↲");                  // tick box obj
+    var reversedBox = xyPosition.add('checkbox', undefined, "R");                  // tick box obj
     //xyPosition.add("statictext", undefined, "s:");            // text obj
     var rePosSpacing = xyPosition.add("edittext", undefined, "spc");    // input obj
     repositionXBox.onClick = function (){canRepositionX = repositionXBox.value;}
@@ -174,14 +176,45 @@ function createUI()
     diagramSize.add("statictext", undefined, "Diagram Width:");         // text obj
     var diagramWidth = diagramSize.add("edittext", undefined, "100");   // input obj
     diagramWidth.characters = 4;
+    var lastWidth = 100;
 
-    //var linkWH = diagramSize.add('checkbox', undefined, "☍");        // tick box obj (TODO impl)
+    diagramWidth.onChange = function()
+    {
+        if (islinkWidthToHeight)
+        {
+            var newWidth = parseFloat(diagramWidth.text.replace(",", ".")); 
+            var h = parseFloat(diagramHeight.text.replace(",", "."));
+            //determine the new diagram height with rule of three
+            var changedHeight =  newWidth * h / lastWidth;
+            diagramHeight.text = String(changedHeight);
+        }
+        lastWidth = parseFloat(diagramWidth.text.replace(",", "."));
+    }
 
+   var linkWidthToHeight = diagramSize.add('checkbox', undefined, "L");        // tick box obj 
+   linkWidthToHeight.onClick = function () {islinkWidthToHeight = linkWidthToHeight.value;}
+    
     diagramSize.add("statictext", undefined, "Diagram Height:");        // text obj
     var diagramHeight = diagramSize.add("edittext", undefined, "100");  // input obj
     diagramHeight.characters = 4;
+    var lastHeight = 100;
+
+    diagramHeight.onChange = function()
+    {
+       if (islinkWidthToHeight)
+       {
+            var newHeight = parseFloat(diagramHeight.text.replace(",", ".")); 
+            var w = parseFloat(diagramWidth.text.replace(",", "."));
+            //determine the new diagram height with rule of three
+            var changedWidth =  newHeight * w / lastHeight;
+            diagramWidth.text = String(changedWidth);
+        }
+        lastHeight = parseFloat(diagramHeight.text.replace(",", "."));
+        
+    }
     
-    //var linkHS = diagramSize.add('checkbox', undefined, "☍ to frets");  // tick box obj (TODO impl)
+    var linkHeightToFrets = diagramSize.add('checkbox', undefined, "L to strings & frets");  // tick box obj 
+    linkHeightToFrets.onClick = function () {isLinkHeightToFrets = linkHeightToFrets.value;}
 
     // String and Fret Thickness input group ---------
     var stringAndFretThickness = myWindow.add('group {orientation: "row"}');            // container
@@ -218,17 +251,19 @@ function createUI()
                 }
             
                 //change the diagram height accordingly
-                var currentString = (numberOfStringsDropDown.selection).text;   // number of strings as text
-                var currentFret = (numberOfFretsDropDown.selection).text;       // number of frets as text
+                if (isLinkHeightToFrets)
+                {
+                    var currentString = (numberOfStringsDropDown.selection).text;   // number of strings as text
+                    var currentFret = (numberOfFretsDropDown.selection).text;       // number of frets as text
 
-                var w = parseFloat(diagramWidth.text.replace(",", ".")); 
-                //get the first char of the text (contains number of strings and frets)
-                var s = parseInt(currentString.charAt(0));                      // number of strings as Int
-                var f = parseInt(currentFret.charAt(0)) + 1;                    // number of frets as Int plus the nut
-                //determine the new diagram height with rule of three
-                var changedHeight =  f * w / s;
-                diagramHeight.text = String(changedHeight);
-
+                    var w = parseFloat(diagramWidth.text.replace(",", ".")); 
+                    //get the first char of the text (contains number of strings and frets)
+                    var s = parseInt(currentString.charAt(0));                      // number of strings as Int
+                    var f = parseInt(currentFret.charAt(0)) + 1;                    // number of frets as Int plus the nut
+                    //determine the new diagram height with rule of three
+                    var changedHeight =  f * w / s;
+                    diagramHeight.text = String(changedHeight);
+                }
                 myWindow.update();
             } 
         }
@@ -241,14 +276,16 @@ function createUI()
             if (numberOfFretsDropDown.selection == numberOfFretsDropDown.items[i-5]) 
             {
                 //change the diagram height accordingly 
-                var currentString = (numberOfStringsDropDown.selection).text;       // number of strings as text
-                var w = parseFloat(diagramWidth.text.replace(",", ".")); 
-                //get the first char of the text (contains number of strings). The number of frets is the (i)
-                var s = parseInt(currentString.charAt(0));                          // number of strings as Int
-                //determine the new diagram height with rule of three
-                var changedHeight =  i * w / s;
-                diagramHeight.text = String(changedHeight);
-
+                if (isLinkHeightToFrets)
+                {
+                    var currentString = (numberOfStringsDropDown.selection).text;       // number of strings as text
+                    var w = parseFloat(diagramWidth.text.replace(",", ".")); 
+                    //get the first char of the text (contains number of strings). The number of frets is the (i)
+                    var s = parseInt(currentString.charAt(0));                          // number of strings as Int
+                    //determine the new diagram height with rule of three
+                    var changedHeight =  i * w / s;
+                    diagramHeight.text = String(changedHeight);
+                }    
                 myWindow.update();
             } 
         }
@@ -258,8 +295,8 @@ function createUI()
     var myButtonGroup = myWindow.add("group");                                          // container
     myButtonGroup.alignment = "center";
     var resetBox = myButtonGroup.add('checkbox', undefined, "Reset all?");                         // tick box obj
-    myWindow.newBtn = myButtonGroup.add("button", undefined, "New");                  // button obj
-    myWindow.createBtn = myButtonGroup.add("button", undefined, "Draw");          // button obj
+    myWindow.newBtn = myButtonGroup.add("button", undefined, "Clear");                  // button obj
+    myWindow.createBtn = myButtonGroup.add("button", undefined, "Draw Chord");          // button obj
    // myWindow.saveBtn = myButtonGroup.add("button", undefined, "Save as");             // button obj
    // myWindow.manageBtn = myButtonGroup.add("button", undefined, "Favorites");          // button obj
     myWindow.closeBtn = myButtonGroup.add("button", undefined, "Close");                // button obj
@@ -618,7 +655,7 @@ function getLastIndexOf(arr, value)
     return index;
 }
 
-function makeColor(c, m, y, k) // TODO: change to CMYK
+function makeColor(c, m, y, k) 
 {
     var col = new CMYKColor();
     

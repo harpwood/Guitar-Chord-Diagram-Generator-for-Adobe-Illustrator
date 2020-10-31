@@ -1,12 +1,18 @@
-## Guitar Chord Diagram Generator for Adobe Illustrator (v0.2.4 alpha)
+## Guitar Chord Diagram Generator for Adobe Illustrator (v0.2.5 alpha)
 
 
+
+##### Good news! This version (v0.2.5) is probably the last alpha version of this script. Soon the next version will be released as beta. It will be more stable and with complete features!
 
 #### The documentation will be updated sometime later, because the UI is not final yet.
 
-Use the script *ChordDiagrams.jsx*  in the folder *deploy*. 
 
-How to run a script with Adobe illustrator : https://helpx.adobe.com/illustrator/using/automation-scripts.html#run_a_script 
+
+### Brief instructions
+
+Use the script *ChordDiagrams.jsx*  **in the folder *deploy***.  You can also download the script from [releases](https://github.com/harpwood/Guitar-Chord-Diagram-Generator-for-Adobe-Illustrator/releases)
+
+**How to run a script** with Adobe illustrator : https://helpx.adobe.com/illustrator/using/automation-scripts.html#run_a_script 
 
 
 
