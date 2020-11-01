@@ -11,6 +11,7 @@ canRepositionY = false;
 isReversed = false;
 isLinkHeightToFrets = false;
 islinkWidthToHeight = false;
+isLinkThickness = false;
 canReset = false;
 
 createUI();
@@ -161,9 +162,12 @@ function createUI()
     
     xyPosition.add("statictext", undefined, "Reposition: ");            // text obj
     var repositionXBox = xyPosition.add('checkbox', undefined, "x");                         // tick box obj
+    repositionXBox.value = canRepositionX;
     var repositionYBox = xyPosition.add('checkbox', undefined, "y");                         // tick box obj
+    repositionYBox.value = canRepositionY;
     var reversedBox = xyPosition.add('checkbox', undefined, "R");                  // tick box obj
-    //xyPosition.add("statictext", undefined, "s:");            // text obj
+    reversedBox.value = isReversed;
+
     var rePosSpacing = xyPosition.add("edittext", undefined, "spc");    // input obj
     repositionXBox.onClick = function (){canRepositionX = repositionXBox.value;}
     repositionYBox.onClick = function (){canRepositionY = repositionYBox.value;}
@@ -192,6 +196,7 @@ function createUI()
     }
 
    var linkWidthToHeight = diagramSize.add('checkbox', undefined, "L");        // tick box obj 
+   linkWidthToHeight.value = islinkWidthToHeight;
    linkWidthToHeight.onClick = function () {islinkWidthToHeight = linkWidthToHeight.value;}
     
     diagramSize.add("statictext", undefined, "Diagram Height:");        // text obj
@@ -214,6 +219,7 @@ function createUI()
     }
     
     var linkHeightToFrets = diagramSize.add('checkbox', undefined, "L to strings & frets");  // tick box obj 
+    linkHeightToFrets.value = isLinkHeightToFrets;
     linkHeightToFrets.onClick = function () {isLinkHeightToFrets = linkHeightToFrets.value;}
 
     // String and Fret Thickness input group ---------
@@ -224,11 +230,53 @@ function createUI()
     stringAndFretThickness.add("statictext", undefined, "String Thickness:");           // text obj
     var stringThickness = stringAndFretThickness.add("edittext", undefined, "auto");    // input obj
     stringThickness.characters = 4;
+    var lastStringThickness = "auto";
+
+    stringThickness.onChange = function()
+    {
+        var lastStringThicknessFloat =  parseFloat(lastStringThickness.replace(",", "."));
+        var lastFretThicknessFloat =  parseFloat(lastFretThickness.replace(",", "."));
+        if (!isNaN(lastStringThicknessFloat) && (!isNaN(lastFretThicknessFloat)))
+        {
+            if(isLinkThickness)
+            {
+                var newStringThickness = parseFloat(stringThickness.text.replace(",", ".")); 
+                var t = parseFloat(fretThickness.text.replace(",", "."));
+                //determine the new diagram height with rule of three
+                var changedThickness =  newStringThickness * t / lastStringThicknessFloat;
+                fretThickness.text = String(changedThickness);
+            }
+        }
+        lastStringThickness = stringThickness.text.replace(",", ".");
+    }
+
+    var linkThickness = stringAndFretThickness.add('checkbox', undefined, "L");        // tick box obj
+    linkThickness.value = isLinkThickness;
+    linkThickness.onClick = function () {isLinkThickness = linkThickness.value;}
 
     // Fret Thickness
     stringAndFretThickness.add("statictext", undefined, "Fret Thickness:");             // text obj
     var fretThickness = stringAndFretThickness.add("edittext", undefined, "auto");      // input obj
     fretThickness.characters = 4;
+    var lastFretThickness = "auto";
+
+    fretThickness.onChange = function()
+    {
+        var lastStringThicknessFloat =  parseFloat(lastStringThickness.replace(",", "."));
+        var lastFretThicknessFloat =  parseFloat(lastFretThickness.replace(",", "."));
+        if (!isNaN(lastStringThicknessFloat) && (!isNaN(lastFretThicknessFloat)))
+        {
+            if(isLinkThickness)
+            {
+                var newFretThickness = parseFloat(fretThickness.text.replace(",", ".")); 
+                var t = parseFloat(stringThickness.text.replace(",", "."));
+                //determine the new diagram height with rule of three
+                var changedThickness =  newFretThickness * t / lastFretThicknessFloat;
+                stringThickness.text = String(changedThickness);
+            }
+        }
+        lastFretThickness = fretThickness.text.replace(",", ".");
+    }
 
     //Dynamic UI Changes -------
     numberOfStringsDropDown.onChange = function () {
@@ -294,7 +342,11 @@ function createUI()
     //Buttons ------
     var myButtonGroup = myWindow.add("group");                                          // container
     myButtonGroup.alignment = "center";
+
     var resetBox = myButtonGroup.add('checkbox', undefined, "Reset all?");                         // tick box obj
+    resetBox.value = canReset;
+    resetBox.onClick = function (){canReset = resetBox.value;}
+
     myWindow.newBtn = myButtonGroup.add("button", undefined, "Clear");                  // button obj
     myWindow.createBtn = myButtonGroup.add("button", undefined, "Draw Chord");          // button obj
    // myWindow.saveBtn = myButtonGroup.add("button", undefined, "Save as");             // button obj
@@ -303,7 +355,7 @@ function createUI()
 
     myWindow.layout.layout(true);   
 
-    resetBox.onClick = function (){canReset = resetBox.value;}
+    
 
     myWindow.newBtn.onClick = function ()
     {

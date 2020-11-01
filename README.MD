@@ -1,8 +1,8 @@
-## Guitar Chord Diagram Generator for Adobe Illustrator (v0.2.5 alpha)
+## Guitar Chord Diagram Generator for Adobe Illustrator (v0.2.6 alpha)
 
 
 
-##### Good news! This version (v0.2.5) is probably the last alpha version of this script. Soon the next version will be released as beta. It will be more stable and with complete features!
+##### Good news! This version ~~(v0.2.5)~~ ***(v0.2.6)*** is probably the last alpha version of this script. Soon the next version will be released as beta. It will be more stable and with complete features!
 
 #### The documentation will be updated sometime later, because the UI is not final yet.
 
@@ -33,6 +33,8 @@ This script will generate guitar chord diagrams for you on Adobe Illustrator. It
 ~~user interface (more details later)~~
 
 ~~grouping the diagram after completion~~
+
+refactoring
 
 polishing
 
