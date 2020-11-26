@@ -1,6 +1,7 @@
 ## Guitar Chord Diagram Generator for Adobe Illustrator (v0.3.0 beta)
 
 
+### ATTENTION: This repo will soon be deprecated in favor of this repo: https://github.com/harpwood/Chord-Diagram-Creator-for-Adobe-Illustrator
 
 ##### This version should be stable enough to use it. 
 
