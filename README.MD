@@ -1,5 +1,6 @@
 ## Guitar Chord Diagram Generator for Adobe Illustrator (v0.3.0 beta)
 
+<a href="https://www.buymeacoffee.com/harpwood" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ### ATTENTION: This repo will soon be deprecated in favor of this repo: https://github.com/harpwood/Chord-Diagram-Creator-for-Adobe-Illustrator
 
